@@ -118,6 +118,7 @@ Lexer::Token Lexer::nextToken() {
                 token.value += currentChar;
                 currentChar = nextChar();
             }
+            rollBack();
             if(isKeyword(token.value)) token.type = KEYWORD;
             // if(token.value == "true" || token.value == "false") token.type = BOOL;
             break;
@@ -144,6 +145,7 @@ Lexer::Token Lexer::nextToken() {
                 }
                 break;
             }
+            rollBack();
             if(token.type != REAL) token.type = INT;
             break;
         }
@@ -181,7 +183,6 @@ Lexer::Token Lexer::nextToken() {
             if(currentChar != '\'') {
                 error("too much characters in sigle quote", currentChar);
             }
-            currentChar = nextChar();
             token.type = CHAR;
             break;
         }        
@@ -194,22 +195,17 @@ Lexer::Token Lexer::nextToken() {
                 currentChar = nextChar();
                 if(currentChar == '=') {
                     token.value += '=';
-                    currentChar = nextChar();
                 }
             } else if(currentChar == '&') {
                 currentChar = nextChar();
                 if(currentChar == '&') {
                     token.value += '&';
-                    currentChar = nextChar();
                 }
             } else if(currentChar == '|') {
                 currentChar = nextChar();
                 if(currentChar == '|') {
                     token.value += '|';
-                    currentChar = nextChar();
                 }
-            } else {
-                currentChar = nextChar();
             }
             break;
         }
