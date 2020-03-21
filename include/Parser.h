@@ -28,9 +28,13 @@ public:
 private:
     ASTNode* root;
     Lexer lexer;
+    Lexer::Token getToken();
+    Lexer::Token restoreToken();
+    std::deque<Lexer::Token> leftTokenBuffer;
+    std::deque<Lexer::Token> rightTokenBuffer;
     void parseProgrem();
     ASTNode* parseSTH();
-
+    
 public:
     Parser(std::string &filename);
     ASTNode* getAST();

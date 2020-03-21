@@ -45,7 +45,7 @@ expression_list -> expression
 expression -> additive_expression relational_operator additive_expression
             | additive_expression
 
-relational_operator -> <= 
+relational_operator -> <=
                      | >=
                      | ==
                      | <
@@ -53,8 +53,8 @@ relational_operator -> <=
                      | !=
 
 additive_expression -> term 
-            | term + additive_expression
-            | term - additive_expression
+                     | term + additive_expression
+                     | term - additive_expression
 
 term -> factor
       | term * factor
@@ -64,7 +64,6 @@ factor -> REAL
         | INT
         | CHAR
         | STRING
-        | REAL
         | ID
         | call_statement
         | ( expression )
