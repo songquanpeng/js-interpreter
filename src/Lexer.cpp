@@ -216,6 +216,10 @@ Lexer::Token Lexer::nextToken() {
 }
 
 void Lexer::print(Lexer::Token token) {
+    cout << tokenToString(token) << endl;
+}
+
+string Lexer::tokenToString(Lexer::Token token) {
     std::string tokenType;
     std::string tokenValue = token.value;
     switch(token.type) {
@@ -231,8 +235,9 @@ void Lexer::print(Lexer::Token token) {
         case Lexer::END_OF_FILE: tokenType = "END_OF_FILE";break;
         default: error("unexpected token type: " + token.type, '\0');
     }
-    cout << "<" << tokenType << ", " << tokenValue << ", " << token.rowNumber << ">";
+    return "<" + tokenType + ", " + tokenValue + ", " + to_string(token.rowNumber) + ">";
 }
+
 
 void Lexer::error(std::string message, char currentChar) {
     if(currentChar != '\0') {

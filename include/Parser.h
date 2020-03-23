@@ -1,4 +1,4 @@
-#ifndef _PARSR_H
+#ifndef _PARSER_H
 #define _PARSER_H
 
 #include "Lexer.h"
@@ -16,8 +16,8 @@ public:
     class ASTNode {
     public:
         Lexer::Token token;
-        ASTNode* childred[5];
-        ASTNode* next;
+        ASTNode *childred[5];
+        ASTNode *next;
         NodeType type;
         ASTNode() {
             type = NONE;
@@ -26,18 +26,34 @@ public:
         }
     };
 private:
-    ASTNode* root;
+    ASTNode *root;
     Lexer lexer;
     Lexer::Token getToken();
     Lexer::Token restoreToken();
     std::deque<Lexer::Token> leftTokenBuffer;
     std::deque<Lexer::Token> rightTokenBuffer;
+    void error(std::string message, Lexer::Token token);
     void parseProgrem();
-    ASTNode* parseSTH();
+    ASTNode *parseStatementList();
+    ASTNode *parseStatement();
+    ASTNode *parseDeclareStatement();
+    ASTNode *parseParameterList();
+    ASTNode *parseAssignStatement();
+    ASTNode *parseIfStatement();
+    ASTNode *parseWhileStatement();
+    ASTNode *parseReturnStatement();
+    ASTNode *parseCallStatement();
+    ASTNode *parseArgumentList();
+    ASTNode *parseExpressionList();
+    ASTNode *parseExpression();
+    ASTNode *parseRelationalOperator();
+    ASTNode *parseAdditiveExpression();
+    ASTNode *parseTerm();
+    ASTNode *parseFactor();
     
 public:
     Parser(std::string &filename);
-    ASTNode* getAST();
+    ASTNode *getAST();
     void printAST();
 };
 

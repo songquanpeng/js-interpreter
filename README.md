@@ -24,7 +24,7 @@ decalre_statement -> var ID = expression;
 parameter_list -> ID
                 | ID , parameter_list
 
-assignment_statement -> ID = expression ;
+assign_statement -> ID = expression ;
 
 if_statement -> if ( expression ) { statement }
               | if ( expression ) { statement } else { statement }

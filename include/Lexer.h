@@ -45,6 +45,7 @@ public:
     Token nextToken(); // Get next token.
     void resetRow(); // Reset rowNumber to 0.
     void print(Token token); // Print token.
+    std::string tokenToString(Token token); // Convert token to string.
     void error(std::string message, char currentChar);
 };
 
