@@ -7,6 +7,7 @@ using namespace std;
 Parser::Parser(string &filename) {
     lexer.openFile(filename);
     root = nullptr;
+    parseProgrem();
 }
 
 // Load next token.
@@ -20,6 +21,7 @@ Lexer::Token Parser::getToken() {
         rightTokenBuffer.pop_front();
         leftTokenBuffer.push_back(token);
     }
+    log("get token ", leftTokenBuffer.back());
     return leftTokenBuffer.back();
 }
 
@@ -36,6 +38,9 @@ void Parser::error(string message, Lexer::Token token) {
     exit(-1);
 }
 
+void Parser::log(string message, Lexer::Token token) {
+    cout << "[Parser] [Log]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
+}
 
 void Parser::printAST() {
     // TODO
@@ -86,7 +91,7 @@ Parser::ASTNode *Parser::parseStatement() {
         } else if (token.value == "(") {
             restoreToken();
             restoreToken();
-            node = parseCallStatement();
+            node = parseCallExpression();
         } else {
             error("only '=' and '(' are allowed here", token);
         }
@@ -98,58 +103,47 @@ Parser::ASTNode *Parser::parseStatement() {
 
 
 Parser::ASTNode *Parser::parseDeclareStatement() {
-    return new ASTNode();
+    return new ASTNode;
 }
 
 Parser::ASTNode *Parser::parseParameterList() {
-    return new ASTNode();
-
+    return new ASTNode;
 }
 
 Parser::ASTNode *Parser::parseAssignStatement() {
     return new ASTNode();
-
 }
-
 
 Parser::ASTNode *Parser::parseIfStatement() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseWhileStatement() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseReturnStatement(){
     return new ASTNode();
-
 }
 
-Parser::ASTNode *Parser::parseCallStatement() {
+Parser::ASTNode *Parser::parseCallExpression() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseArgumentList() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseExpressionList() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseExpression() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseRelationalOperator() {
     return new ASTNode();
-
 }
 
 Parser::ASTNode *Parser::parseAdditiveExpression() {
@@ -158,11 +152,64 @@ Parser::ASTNode *Parser::parseAdditiveExpression() {
 }
 
 Parser::ASTNode *Parser::parseTerm() {
-    return new ASTNode();
-
+    ASTNode *node = parseFactor();
+    Lexer::Token token = getToken();
+    while (token.value == "*" || token.value == "/") {
+        ASTNode *parentNode = new ASTNode;
+        parentNode->type = BINARY_OPERATOR_NODE;
+        parentNode->token = token;
+        parentNode->childred[0] = node;
+        node = parentNode;
+        parentNode->childred[1] = parseFactor();
+        token = getToken();
+    }
+    restoreToken();
+    return node;
 }
 
 Parser::ASTNode *Parser::parseFactor() {
-    return new ASTNode();
-
+    ASTNode *node = nullptr;
+    Lexer::Token token = getToken();
+    if (token.value == "(") {
+        node = parseExpression();
+        token = getToken();
+        if(token.value != ")") {
+            error("expect ) but get ", token);
+        }
+    } else if (token.type == Lexer::INT) {
+        node = new ASTNode;
+        node->token = token;
+        node->type = INT_NODE;
+    } else if (token.type == Lexer::REAL) {
+        node = new ASTNode;
+        node->token = token;
+        node->type = REAL_NODE;
+    } else if (token.type == Lexer::STRING) {
+        node = new ASTNode;
+        node->token = token;
+        node->type = STRING_NODE;
+    } else if (token.type == Lexer::CHAR) {
+        node = new ASTNode;
+        node->token = token;
+        node->type = CHAR_NODE;
+    } else if (token.value == "true" || token.value == "false") {
+        node = new ASTNode;
+        node->token = token;
+        node->type = BOOL_NODE;
+    } else if (token.type == Lexer::ID) {
+        node = new ASTNode;
+        node->token = token;
+        node->type = VAR_NODE;
+        token = getToken();
+        if (token.value == "(") {
+            restoreToken();
+            restoreToken();
+            node = parseCallExpression();
+        } else {
+            restoreToken();
+        }
+    } else {
+        error("unexpect token when parse factor ", token);
+    }
+    return node;
 }

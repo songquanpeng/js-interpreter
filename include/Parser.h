@@ -10,8 +10,19 @@ class Parser {
 public:
     enum NodeType {
         NONE,
-        CLASS,
-        VAR
+        PROGRAM_NODE,
+        VAR_NODE,
+        UNARY_OPERATOR_NODE,
+        BINARY_OPERATOR_NODE,
+        FUNCTION_DECLARE_NODE,
+        FUNCTION_CALL_NODE,
+        VAR_DELCARE_NODE,
+        VAR_ASSIGN_NODE,
+        INT_NODE,
+        REAL_NODE,
+        STRING_NODE,
+        CHAR_NODE,
+        BOOL_NODE
     };
     class ASTNode {
     public:
@@ -33,6 +44,7 @@ private:
     std::deque<Lexer::Token> leftTokenBuffer;
     std::deque<Lexer::Token> rightTokenBuffer;
     void error(std::string message, Lexer::Token token);
+    void log(std::string message, Lexer::Token token);
     void parseProgrem();
     ASTNode *parseStatementList();
     ASTNode *parseStatement();
@@ -42,7 +54,7 @@ private:
     ASTNode *parseIfStatement();
     ASTNode *parseWhileStatement();
     ASTNode *parseReturnStatement();
-    ASTNode *parseCallStatement();
+    ASTNode *parseCallExpression();
     ASTNode *parseArgumentList();
     ASTNode *parseExpressionList();
     ASTNode *parseExpression();

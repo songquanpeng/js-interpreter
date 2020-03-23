@@ -16,7 +16,7 @@ statement -> decalre_statement ;
            | if_statement ;
            | while_statement ;
            | return_statement ;
-           | call_statement ;
+           | call_expression ;
 
 decalre_statement -> var ID = expression;
                    | function ID ( parameter_list ) { statement_list }
@@ -34,7 +34,7 @@ while_statement -> while ( expression ) { statement }
 return_statement -> return ; 
                   | return expression ;
 
-call_statement -> ID ( argument_list )
+call_expression -> ID ( argument_list )
 
 argument_list -> expression
                | expression , argument_list
@@ -64,8 +64,9 @@ factor -> REAL
         | INT
         | CHAR
         | STRING
+        | BOOL
         | ID
-        | call_statement
+        | call_expression
         | ( expression )
 
 ```
