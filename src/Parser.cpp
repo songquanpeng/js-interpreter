@@ -1,13 +1,14 @@
 #include "Parser.h"
 #include <iostream>
 #include <string>
+#include <cassert>
 
 using namespace std;
 
 Parser::Parser(string &filename) {
     lexer.openFile(filename);
     root = nullptr;
-    parseProgrem();
+    parseProgram();
 }
 
 // Load next token.
@@ -25,12 +26,12 @@ Lexer::Token Parser::getToken() {
     return leftTokenBuffer.back();
 }
 
-// Restore current token and load last token.
-Lexer::Token Parser::restoreToken() {
+// Restore current token.
+void Parser::restoreToken() {
     auto token = leftTokenBuffer.back();
     leftTokenBuffer.pop_back();
     rightTokenBuffer.push_front(token);
-    return leftTokenBuffer.back();
+    log("restore token ", token);
 }
 
 void Parser::error(string message, Lexer::Token token) {
@@ -50,7 +51,7 @@ Parser::ASTNode *Parser::getAST() {
     return root;
 }
 
-void Parser::parseProgrem() {
+void Parser::parseProgram() {
     root = parseStatementList();
 }
 
@@ -81,7 +82,7 @@ Parser::ASTNode *Parser::parseStatement() {
         node = parseReturnStatement();
     } else if (token.value == "var") {
         restoreToken();
-        node = parseReturnStatement();
+        node = parseDeclareStatement();
     } else if (token.type == Lexer::ID) {
         token = getToken();
         if (token.value == "=") {
@@ -103,7 +104,21 @@ Parser::ASTNode *Parser::parseStatement() {
 
 
 Parser::ASTNode *Parser::parseDeclareStatement() {
-    return new ASTNode;
+    Parser::ASTNode *node = new ASTNode;
+    node->type = VAR_DELCARE_NODE;
+    Lexer::Token token = getToken();
+    assert(token.value == "var");
+    token = getToken();
+    assert(token.type == Lexer::ID);
+    Parser::ASTNode *leftNode = new ASTNode;
+    leftNode->token = token;
+    token = getToken();
+    assert(token.value == "=");
+    Parser::ASTNode *rightNode = new ASTNode;
+    token = getToken();
+    rightNode->token = token;
+    node->child[1] = rightNode;
+    return node;
 }
 
 Parser::ASTNode *Parser::parseParameterList() {
@@ -158,9 +173,9 @@ Parser::ASTNode *Parser::parseTerm() {
         ASTNode *parentNode = new ASTNode;
         parentNode->type = BINARY_OPERATOR_NODE;
         parentNode->token = token;
-        parentNode->childred[0] = node;
+        parentNode->child[0] = node;
         node = parentNode;
-        parentNode->childred[1] = parseFactor();
+        parentNode->child[1] = parseFactor();
         token = getToken();
     }
     restoreToken();

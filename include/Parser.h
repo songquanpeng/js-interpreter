@@ -27,12 +27,12 @@ public:
     class ASTNode {
     public:
         Lexer::Token token;
-        ASTNode *childred[5];
+        ASTNode *child[5];
         ASTNode *next;
         NodeType type;
         ASTNode() {
             type = NONE;
-            childred[0] = childred[1] = childred[2] = childred[3] = childred[4] = nullptr;
+            child[0] = child[1] = child[2] = child[3] = child[4] = nullptr;
             next = nullptr;
         }
     };
@@ -40,12 +40,12 @@ private:
     ASTNode *root;
     Lexer lexer;
     Lexer::Token getToken();
-    Lexer::Token restoreToken();
+    void restoreToken();
     std::deque<Lexer::Token> leftTokenBuffer;
     std::deque<Lexer::Token> rightTokenBuffer;
     void error(std::string message, Lexer::Token token);
     void log(std::string message, Lexer::Token token);
-    void parseProgrem();
+    void parseProgram();
     ASTNode *parseStatementList();
     ASTNode *parseStatement();
     ASTNode *parseDeclareStatement();

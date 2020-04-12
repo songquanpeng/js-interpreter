@@ -1,4 +1,5 @@
 .vscode
 .vs
-/build
-!/build/*.js
+build/*
+cmake-build-debug/*
+.idea
