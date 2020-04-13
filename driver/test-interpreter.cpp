@@ -1,4 +1,4 @@
-#include "Lexer.h"
+#include "Interpreter.h"
 #include <iostream>
 
 using namespace std;
@@ -8,4 +8,7 @@ int main(int argc, char *argv[]) {
         cerr << "usage: " << argv[0] << " <*.js>" <<endl;
         exit(-1);
     }
+    string filename(argv[1]);
+    Interpreter interpreter;
+    interpreter.interpretFile(filename);
 }

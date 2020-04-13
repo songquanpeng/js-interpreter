@@ -5,9 +5,12 @@
 
 using namespace std;
 
-Parser::Parser(string &filename) {
-    lexer.openFile(filename);
+Parser::Parser() {
     root = nullptr;
+}
+
+void Parser::parseFile(std::string &filename) {
+    lexer.openFile(filename);
     parseProgram();
 }
 
@@ -44,7 +47,11 @@ void Parser::log(const string &message, Lexer::Token token) {
 }
 
 void Parser::printAST() {
-    // TODO
+    printASTHelper(root, 0);
+}
+
+void Parser::printASTHelper(Parser::ASTNode *node, int depth) {
+
 }
 
 Parser::ASTNode *Parser::getAST() {
@@ -254,6 +261,7 @@ Parser::ASTNode *Parser::parseArgumentList() {
 
 Parser::ASTNode *Parser::parseExpression() {
     auto *node = parseAdditiveExpression();
+    node->type = EXPRESSION_NODE;
     Lexer::Token token = getToken();
     if (token.value == "<=" || token.value == ">=" || token.value == "==" ||
         token.value == "<" || token.value == ">" || token.value == "!=") {
@@ -372,3 +380,7 @@ Parser::ASTNode *Parser::parseFunction() {
     assert(token.value == "}");
     return node;
 }
+
+
+
+

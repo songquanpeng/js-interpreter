@@ -11,6 +11,7 @@ public:
     enum NodeType {
         NONE,
         PROGRAM_NODE,
+        EXPRESSION_NODE,
         VAR_NODE,
         UNARY_OPERATOR_NODE,
         BINARY_OPERATOR_NODE,
@@ -31,12 +32,12 @@ public:
     class ASTNode {
     public:
         Lexer::Token token;
-        ASTNode *child[5];
+        ASTNode *child[3];
         ASTNode *next;
         NodeType type;
         ASTNode() {
             type = NONE;
-            child[0] = child[1] = child[2] = child[3] = child[4] = nullptr;
+            child[0] = child[1] = child[2] = nullptr;
             next = nullptr;
         }
     };
@@ -65,9 +66,11 @@ private:
     ASTNode *parseAdditiveExpression();
     ASTNode *parseTerm();
     ASTNode *parseFactor();
+    static void printASTHelper(ASTNode *node, int depth);
     
 public:
-    explicit Parser(std::string &filename);
+    explicit Parser();
+    void parseFile(std::string &filename);
     ASTNode *getAST();
     void printAST();
 };

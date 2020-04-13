@@ -9,7 +9,8 @@ int main(int argc, char *argv[]) {
         exit(-1);
     }
     string filename(argv[1]);
-    Parser parser(filename);
+    Parser parser;
+    parser.parseFile(filename);
     Parser::ASTNode *ast = parser.getAST();
     parser.printAST();
 }
