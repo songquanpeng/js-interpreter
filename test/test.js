@@ -7,10 +7,15 @@ if(b) {
     var f = c*d;
 }
 
-function func(p1, p2) {
+function add(p1, p2) {
     var e = p1 + p2;
     return e;
 }
+log();
+var g = add(c, d);
 
-addEventListener();
-var f = func(c, d);
+a = add(1, 2);
+
+while (true) {
+    log(a+b);
+}

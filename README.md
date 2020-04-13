@@ -5,21 +5,23 @@ Javascript interpreter written in C++.
 
 ## Context Free Grammer
 
-```javascript
+```
 program -> statement_list
 
 statement_list -> statement
                 | statement ; statement_list
 
-statement -> decalre_statement ;
+statement -> declare_statement ;
+           | function_declare ;
            | assign_statement ;
-           | if_statement ;
-           | while_statement ;
+           | if_statement
+           | while_statement
            | return_statement ;
            | call_expression ;
 
-decalre_statement -> var ID = expression;
-                   | function ID ( parameter_list ) { statement_list }
+declare_statement -> var ID = expression;
+
+function_declare -> function ID ( parameter_list ) { statement_list }
 
 parameter_list -> ID
                 | ID , parameter_list
@@ -38,9 +40,6 @@ call_expression -> ID ( argument_list )
 
 argument_list -> expression
                | expression , argument_list
-
-expression_list -> expression
-                 | expression , expression_list
 
 expression -> additive_expression relational_operator additive_expression
             | additive_expression

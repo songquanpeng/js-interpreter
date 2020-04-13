@@ -15,14 +15,18 @@ public:
         UNARY_OPERATOR_NODE,
         BINARY_OPERATOR_NODE,
         FUNCTION_DECLARE_NODE,
+        RETURN_NODE,
         FUNCTION_CALL_NODE,
-        VAR_DELCARE_NODE,
+        VAR_DECLARE_NODE,
         VAR_ASSIGN_NODE,
+        COMPARE_NODE,
+        IF_NODE,
         INT_NODE,
         REAL_NODE,
         STRING_NODE,
         CHAR_NODE,
-        BOOL_NODE
+        BOOL_NODE,
+        WHILE_NODE
     };
     class ASTNode {
     public:
@@ -43,8 +47,8 @@ private:
     void restoreToken();
     std::deque<Lexer::Token> leftTokenBuffer;
     std::deque<Lexer::Token> rightTokenBuffer;
-    void error(std::string message, Lexer::Token token);
-    void log(std::string message, Lexer::Token token);
+    void error(const std::string& message, Lexer::Token token);
+    void log(const std::string& message, Lexer::Token token);
     void parseProgram();
     ASTNode *parseStatementList();
     ASTNode *parseStatement();
@@ -54,17 +58,16 @@ private:
     ASTNode *parseIfStatement();
     ASTNode *parseWhileStatement();
     ASTNode *parseReturnStatement();
+    ASTNode *parseFunction();
     ASTNode *parseCallExpression();
     ASTNode *parseArgumentList();
-    ASTNode *parseExpressionList();
     ASTNode *parseExpression();
-    ASTNode *parseRelationalOperator();
     ASTNode *parseAdditiveExpression();
     ASTNode *parseTerm();
     ASTNode *parseFactor();
     
 public:
-    Parser(std::string &filename);
+    explicit Parser(std::string &filename);
     ASTNode *getAST();
     void printAST();
 };

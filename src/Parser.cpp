@@ -13,10 +13,10 @@ Parser::Parser(string &filename) {
 
 // Load next token.
 Lexer::Token Parser::getToken() {
-    if (rightTokenBuffer.size() == 0) {
+    if (rightTokenBuffer.empty()) {
         auto token = lexer.nextToken();
         leftTokenBuffer.push_back(token);
-        if(leftTokenBuffer.size() > 10) leftTokenBuffer.pop_front();
+        if (leftTokenBuffer.size() > 10) leftTokenBuffer.pop_front();
     } else {
         auto token = rightTokenBuffer.front();
         rightTokenBuffer.pop_front();
@@ -34,12 +34,12 @@ void Parser::restoreToken() {
     log("restore token ", token);
 }
 
-void Parser::error(string message, Lexer::Token token) {
+void Parser::error(const string &message, Lexer::Token token) {
     cerr << "[Parser] [Error]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
     exit(-1);
 }
 
-void Parser::log(string message, Lexer::Token token) {
+void Parser::log(const string &message, Lexer::Token token) {
     cout << "[Parser] [Log]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
 }
 
@@ -59,7 +59,10 @@ Parser::ASTNode *Parser::parseStatementList() {
     ASTNode *node = parseStatement();
     ASTNode *current = node;
     Lexer::Token token = getToken();
-    while (token.type == Lexer::SYMBOL && token.value == ";") {
+    while (token.value == "var" || token.value == "function" ||
+           token.type == Lexer::ID || token.value == "if" ||
+           token.value == "while" || token.value == "return") {
+        restoreToken();
         current->next = parseStatement();
         current = current->next;
         token = getToken();
@@ -83,6 +86,9 @@ Parser::ASTNode *Parser::parseStatement() {
     } else if (token.value == "var") {
         restoreToken();
         node = parseDeclareStatement();
+    } else if (token.value == "function") {
+        restoreToken();
+        node = parseFunction();
     } else if (token.type == Lexer::ID) {
         token = getToken();
         if (token.value == "=") {
@@ -93,6 +99,8 @@ Parser::ASTNode *Parser::parseStatement() {
             restoreToken();
             restoreToken();
             node = parseCallExpression();
+            token = getToken();
+            assert(token.value == ";");
         } else {
             error("only '=' and '(' are allowed here", token);
         }
@@ -104,65 +112,178 @@ Parser::ASTNode *Parser::parseStatement() {
 
 
 Parser::ASTNode *Parser::parseDeclareStatement() {
-    Parser::ASTNode *node = new ASTNode;
-    node->type = VAR_DELCARE_NODE;
+    auto *node = new ASTNode;
+    node->type = VAR_DECLARE_NODE;
     Lexer::Token token = getToken();
     assert(token.value == "var");
     token = getToken();
     assert(token.type == Lexer::ID);
-    Parser::ASTNode *leftNode = new ASTNode;
-    leftNode->token = token;
+    node->token = token;
     token = getToken();
     assert(token.value == "=");
-    Parser::ASTNode *rightNode = new ASTNode;
+    node->child[0] = parseExpression();
     token = getToken();
-    rightNode->token = token;
-    node->child[1] = rightNode;
+    assert(token.value == ";");
     return node;
 }
 
 Parser::ASTNode *Parser::parseParameterList() {
-    return new ASTNode;
+    auto *node = new ASTNode;
+    auto *parent = node;
+    Lexer::Token token = getToken();
+    while (token.type == Lexer::ID) {
+        node->token = token;
+        node->next = new ASTNode;
+        node = node->next;
+        token = getToken();
+        if (token.value == ",") {
+            token = getToken();
+            continue;
+        } else {
+            assert(token.value == ")");
+            restoreToken();
+            break;
+        }
+    }
+    return parent;
 }
 
 Parser::ASTNode *Parser::parseAssignStatement() {
+    auto *node = new ASTNode;
+    node->type = VAR_ASSIGN_NODE;
+    Lexer::Token token = getToken();
+    assert(token.type == Lexer::ID);
+    node->token = token;
+    token = getToken();
+    assert(token.value == "=");
+    node->child[0] = parseExpression();
+    token = getToken();
+    assert(token.value == ";");
     return new ASTNode();
 }
 
 Parser::ASTNode *Parser::parseIfStatement() {
-    return new ASTNode();
+    auto *node = new ASTNode;
+    node->type = IF_NODE;
+    Lexer::Token token = getToken();
+    assert(token.value == "if");
+    token = getToken();
+    assert(token.value == "(");
+    node->child[0] = parseExpression();
+    token = getToken();
+    assert(token.value == ")");
+    token = getToken();
+    assert(token.value == "{");
+    node->child[1] = parseStatementList();
+    token = getToken();
+    assert(token.value == "}");
+    token = getToken();
+    if (token.value == "else") {
+        token = getToken();
+        assert(token.value == "{");
+        node->child[2] = parseStatementList();
+        token = getToken();
+        assert(token.value == "}");
+    } else {
+        restoreToken();
+    }
+    return node;
 }
 
 Parser::ASTNode *Parser::parseWhileStatement() {
-    return new ASTNode();
+    auto *node = new ASTNode;
+    node->type = WHILE_NODE;
+    Lexer::Token token = getToken();
+    assert(token.value == "while");
+    token = getToken();
+    assert(token.value == "(");
+    node->child[0] = parseExpression();
+    token = getToken();
+    assert(token.value == ")");
+    token = getToken();
+    assert(token.value == "{");
+    node->child[1] = parseStatementList();
+    token = getToken();
+    assert(token.value == "}");
+    return node;
 }
 
-Parser::ASTNode *Parser::parseReturnStatement(){
-    return new ASTNode();
+Parser::ASTNode *Parser::parseReturnStatement() {
+    Lexer::Token token = getToken();
+    assert(token.value == "return");
+    auto *node = new ASTNode;
+    node->type = RETURN_NODE;
+    node->child[0] = parseExpression();
+    token = getToken();
+    assert(token.value == ";");
+    return node;
 }
 
 Parser::ASTNode *Parser::parseCallExpression() {
-    return new ASTNode();
+    auto *node = new ASTNode;
+    node->type = FUNCTION_CALL_NODE;
+    Lexer::Token token = getToken();
+    assert(token.type == Lexer::ID);
+    node->token = token;
+    token = getToken();
+    assert(token.value == "(");
+    node->child[0] = parseArgumentList();
+    token = getToken();
+    assert(token.value == ")");
+    return node;
 }
 
 Parser::ASTNode *Parser::parseArgumentList() {
-    return new ASTNode();
-}
-
-Parser::ASTNode *Parser::parseExpressionList() {
-    return new ASTNode();
+    Lexer::Token token = getToken();
+    if (token.value == ")") {
+        restoreToken();
+        return nullptr;
+    }
+    restoreToken();
+    auto *node = parseExpression();
+    auto *parent = node;
+    token = getToken();
+    while (token.value == ",") {
+        node->next = parseExpression();
+        node = node->next;
+        token = getToken();
+    }
+    restoreToken();
+    return parent;
 }
 
 Parser::ASTNode *Parser::parseExpression() {
-    return new ASTNode();
+    auto *node = parseAdditiveExpression();
+    Lexer::Token token = getToken();
+    if (token.value == "<=" || token.value == ">=" || token.value == "==" ||
+        token.value == "<" || token.value == ">" || token.value == "!=") {
+        auto *parent = new ASTNode;
+        parent->type = COMPARE_NODE;
+        parent->token = token;
+        parent->child[0] = node;
+        parent->child[1] = parseAdditiveExpression();
+        node = parent;
+    } else {
+        restoreToken();
+    }
+    return node;
 }
 
-Parser::ASTNode *Parser::parseRelationalOperator() {
-    return new ASTNode();
-}
 
 Parser::ASTNode *Parser::parseAdditiveExpression() {
-    return new ASTNode();
+    ASTNode *node = parseTerm();
+    Lexer::Token token = getToken();
+    while (token.value == "+" || token.value == "-") {
+        auto *parent = new ASTNode;
+        parent->type = BINARY_OPERATOR_NODE;
+        parent->token = token;
+        parent->child[0] = node;
+        parent->child[1] = parseTerm();
+        node = parent;
+        token = getToken();
+    }
+    restoreToken();
+    return node;
 
 }
 
@@ -170,7 +291,7 @@ Parser::ASTNode *Parser::parseTerm() {
     ASTNode *node = parseFactor();
     Lexer::Token token = getToken();
     while (token.value == "*" || token.value == "/") {
-        ASTNode *parentNode = new ASTNode;
+        auto *parentNode = new ASTNode;
         parentNode->type = BINARY_OPERATOR_NODE;
         parentNode->token = token;
         parentNode->child[0] = node;
@@ -188,7 +309,7 @@ Parser::ASTNode *Parser::parseFactor() {
     if (token.value == "(") {
         node = parseExpression();
         token = getToken();
-        if(token.value != ")") {
+        if (token.value != ")") {
             error("expect ) but get ", token);
         }
     } else if (token.type == Lexer::INT) {
@@ -212,9 +333,6 @@ Parser::ASTNode *Parser::parseFactor() {
         node->token = token;
         node->type = BOOL_NODE;
     } else if (token.type == Lexer::ID) {
-        node = new ASTNode;
-        node->token = token;
-        node->type = VAR_NODE;
         token = getToken();
         if (token.value == "(") {
             restoreToken();
@@ -222,9 +340,35 @@ Parser::ASTNode *Parser::parseFactor() {
             node = parseCallExpression();
         } else {
             restoreToken();
+            restoreToken();
+            token = getToken();
+            node = new ASTNode;
+            node->token = token;
+            node->type = VAR_NODE;
         }
     } else {
         error("unexpect token when parse factor ", token);
     }
+    return node;
+}
+
+Parser::ASTNode *Parser::parseFunction() {
+    auto *node = new ASTNode;
+    node->type = FUNCTION_DECLARE_NODE;
+    Lexer::Token token = getToken();
+    assert(token.value == "function");
+    token = getToken();
+    assert(token.type == Lexer::ID);
+    node->token = token;
+    token = getToken();
+    assert(token.value == "(");
+    node->child[0] = parseParameterList();
+    token = getToken();
+    assert(token.value == ")");
+    token = getToken();
+    assert(token.value == "{");
+    node->child[1] = parseStatementList();
+    token = getToken();
+    assert(token.value == "}");
     return node;
 }
