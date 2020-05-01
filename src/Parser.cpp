@@ -102,6 +102,7 @@ Parser::ASTNode *Parser::parseStatement() {
             restoreToken();
             restoreToken();
             node = parseAssignStatement();
+
         } else if (token.value == "(") {
             restoreToken();
             restoreToken();
@@ -166,7 +167,7 @@ Parser::ASTNode *Parser::parseAssignStatement() {
     node->child[0] = parseExpression();
     token = getToken();
     assert(token.value == ";");
-    return new ASTNode();
+    return node;
 }
 
 Parser::ASTNode *Parser::parseIfStatement() {

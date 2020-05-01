@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+using std::string;
+
 class Interpreter {
 public:
     class Variable {
@@ -19,12 +21,15 @@ private:
     Parser parser;
     std::map<std::string, Variable> variableTable;
     Parser::ASTNode *root;
-    void visitAST(Parser::ASTNode *node);
-    void visitDeclareNode(Parser::ASTNode *node);
-    std::string visitExpressionNode(Parser::ASTNode *node);
-    std::string visitBinaryOptNode(Parser::ASTNode *node);
-    void error(const std::string& message, Parser::ASTNode *node);
-    void log(const std::string& message, Parser::ASTNode *node);
+    string visitNode(Parser::ASTNode *node);
+    string visitDeclareNode(Parser::ASTNode *node);
+    string visitAssignNode(Parser::ASTNode *node);
+    string visitExpressionNode(Parser::ASTNode *node);
+    static void error(const std::string& message, const std::string& extra="");
+    static void log(const std::string& message, const std::string& extra="");
+
+    static string binaryOpt(const string& opt, const string& left, const string& right);
+    void printVariableTable();
 };
 
 

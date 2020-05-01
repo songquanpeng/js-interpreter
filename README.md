@@ -1,7 +1,9 @@
 ## Description
 Javascript interpreter written in C++.
 
-## Supported Syntax
+## TODO List
+- [x] Support var declare statement: `var b = 2 * a - 4;`
+- [x] Support assign statement: `c = a * b / c;`
 
 ## Context Free Grammar
 
