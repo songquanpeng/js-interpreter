@@ -3,7 +3,7 @@ Javascript interpreter written in C++.
 
 ## Supported Syntax
 
-## Context Free Grammer
+## Context Free Grammar
 
 ```
 program -> statement_list
