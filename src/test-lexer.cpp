@@ -14,7 +14,6 @@ int main(int argc, char *argv[]) {
     Lexer::Token token = lexer.nextToken();
     while (token.type != Lexer::END_OF_FILE) {
         lexer.print(token);
-        cout << endl;
         token = lexer.nextToken();
     }
 }

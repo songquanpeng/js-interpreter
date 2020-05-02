@@ -43,12 +43,12 @@ void Parser::restoreToken() {
     log("restore token ", token);
 }
 
-void Parser::error(const string &message, Lexer::Token token) {
+void Parser::error(const string &message, const Lexer::Token &token) {
     cerr << "[Parser] [Error]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
     exit(-1);
 }
 
-void Parser::log(const string &message, Lexer::Token token) {
+void Parser::log(const string &message, const Lexer::Token &token) {
     if (!debug) return;
     cout << "[Parser] [Log]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
 }
@@ -272,9 +272,10 @@ Parser::ASTNode *Parser::parseExpression() {
     node->type = EXPRESSION_NODE;
     Lexer::Token token = getToken();
     if (token.value == "<=" || token.value == ">=" || token.value == "==" ||
-        token.value == "<" || token.value == ">" || token.value == "!=") {
+        token.value == "<" || token.value == ">" || token.value == "!=" ||
+        token.value == "&&" || token.value == "||") {
         auto *parent = new ASTNode;
-        parent->type = COMPARE_NODE;
+        parent->type = BINARY_OPERATOR_NODE;
         parent->token = token;
         parent->child[0] = node;
         parent->child[1] = parseAdditiveExpression();

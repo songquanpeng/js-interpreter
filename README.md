@@ -55,6 +55,8 @@ relational_operator -> <=
                      | <
                      | >
                      | !=
+                     | &&
+                     | ||
 
 additive_expression -> term 
                      | term + additive_expression

@@ -192,7 +192,7 @@ Lexer::Token Lexer::nextToken() {
                 currentChar = nextChar();
             }
             if(currentChar != '\'') {
-                error("too much characters in sigle quote", currentChar);
+                error("too much characters in single quote", currentChar);
             }
             token.type = CHAR;
             break;
@@ -206,16 +206,22 @@ Lexer::Token Lexer::nextToken() {
                 currentChar = nextChar();
                 if(currentChar == '=') {
                     token.value += '=';
+                } else {
+                    rollBack();
                 }
             } else if(currentChar == '&') {
                 currentChar = nextChar();
                 if(currentChar == '&') {
                     token.value += '&';
+                } else {
+                    rollBack();
                 }
             } else if(currentChar == '|') {
                 currentChar = nextChar();
                 if(currentChar == '|') {
                     token.value += '|';
+                } else {
+                    rollBack();
                 }
             }
             break;
@@ -226,8 +232,8 @@ Lexer::Token Lexer::nextToken() {
     return token;
 }
 
-void Lexer::print(Lexer::Token token) {
-    cout << tokenToString(std::move(token)) << endl;
+void Lexer::print(const Lexer::Token& token) {
+    cout << tokenToString(token) << endl;
 }
 
 string Lexer::tokenToString(const Lexer::Token& token) {

@@ -106,7 +106,7 @@ string Interpreter::visitDeclareNode(Parser::ASTNode *node) {
     string varName = node->token.value;
     Variable var;
     var.type = node->token.type;
-    var.value = visitExpressionNode(node->child[0]);
+    var.value = visitNode(node->child[0]);
     variableTable.insert({varName, var});
     visitNode(node->next);
     return "";
@@ -117,7 +117,7 @@ string Interpreter::visitAssignNode(Parser::ASTNode *node) {
     string varName = node->token.value;
     Variable var;
     var.type = node->token.type;
-    var.value = visitExpressionNode(node->child[0]);
+    var.value = visitNode(node->child[0]);
     map<string, Interpreter::Variable>::iterator iter;
     iter = variableTable.find(node->token.value);
     if (iter != variableTable.end()) {
@@ -143,8 +143,19 @@ string Interpreter::visitExpressionNode(Parser::ASTNode *node) {
 }
 
 string Interpreter::binaryOpt(const string &opt, const string &left, const string &right) {
-    double lv = stof(left);
-    double rv = stof(right);
+    double  lv, rv;
+    try {
+        lv = stof(left);
+    } catch (std::invalid_argument &e) {
+        if(left == "false") lv = 0;
+        else lv = 1;
+    }
+    try {
+        rv = stof(right);
+    } catch (std::invalid_argument &e) {
+        if(right == "false") rv = 0;
+        else rv = 1;
+    }
     if (opt == "+") {
         return to_string(lv + rv);
     } else if (opt == "-") {
@@ -165,6 +176,10 @@ string Interpreter::binaryOpt(const string &opt, const string &left, const strin
         return lv > rv ? "true" : "false";
     } else if (opt == "!=") {
         return lv != rv ? "true" : "false";
+    } else if (opt == "&&") {
+        return (lv == 0 || rv == 0) ? "false" : "true";
+    } else if (opt == "||") {
+        return (lv != 0 || rv != 0) ? "true" : "false";
     } else {
         error("unexpected operator: ", opt);
         return "";

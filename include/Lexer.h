@@ -47,7 +47,7 @@ public:
     void tokenizeInput(std::string i);
     Token nextToken(); // Get next token.
     void resetRow(); // Reset rowNumber to 0.
-    void print(Token token); // Print token.
+    void print(const Token& token); // Print token.
     std::string tokenToString(const Token& token); // Convert token to string.
     void error(const std::string& message, char currentChar);
     void setDebugMode(bool enable);

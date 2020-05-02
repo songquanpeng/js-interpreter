@@ -48,8 +48,8 @@ private:
     void restoreToken();
     std::deque<Lexer::Token> leftTokenBuffer;
     std::deque<Lexer::Token> rightTokenBuffer;
-    void error(const std::string& message, Lexer::Token token);
-    void log(const std::string& message, Lexer::Token token);
+    void error(const std::string& message, const Lexer::Token& token);
+    void log(const std::string& message, const Lexer::Token& token);
     void parseProgram();
     ASTNode *parseStatementList();
     ASTNode *parseStatement();
