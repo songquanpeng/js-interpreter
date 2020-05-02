@@ -95,6 +95,8 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
         }
         case Parser::NONE:
             return "";
+        case Parser::IF_NODE:
+            return visitIfNode(node);
         default:
             error("unexpected node type: ", to_string(node->type));
             return "";
@@ -133,12 +135,29 @@ string Interpreter::visitAssignNode(Parser::ASTNode *node) {
 string Interpreter::visitExpressionNode(Parser::ASTNode *node) {
     assert(node->type == Parser::EXPRESSION_NODE);
     if (node->child[1] == nullptr) {
+        if(node->token.type == Lexer::ID) {
+            return getVariableValue(node->token.value);
+        }
         return node->token.value;
     } else {
         string opt = node->token.value;
         string left = visitNode(node->child[0]);
         string right = visitNode(node->child[1]);
         return binaryOpt(opt, left, right);
+    }
+}
+
+string Interpreter::visitIfNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::IF_NODE);
+    string condition = visitNode(node->child[0]);
+    if(condition != "0" && condition != "false" && !condition.empty()) {
+        return visitNode(node->child[1]);
+    } else {
+        if( node->child[2] != nullptr) {
+            return visitNode(node->child[2]);
+        } else {
+            return "";
+        }
     }
 }
 
@@ -206,4 +225,15 @@ void Interpreter::printVariableTable() {
 void Interpreter::setDebugMode(bool enable) {
     debug = enable;
     parser.setDebugMode(enable);
+}
+
+string Interpreter::getVariableValue(const string& name) {
+    map<string, Interpreter::Variable>::iterator iter;
+    iter = variableTable.find(name);
+    if (iter != variableTable.end()) {
+        return iter->second.value;
+    } else {
+        log("use undefined variable: ", name);
+        return "";
+    }
 }

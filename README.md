@@ -7,6 +7,15 @@ Javascript interpreter written in C++.
 - [ ] Make the calculation more accuracy by utilized the type information.
 - [x] Interactive mode.
 - [x] Debug mode.
+- [x] Support if statement.
+- [ ] Support while loop statement.
+- [ ] Support for loop statement.
+- [ ] Support function.
+- [ ] Support class.
+- [ ] Support multi-level scope.
+- [ ] Implement necessary built-in functions.
+    - [ ] output(value)
+    - [ ] input(prompt)
 
 ## Context Free Grammar
 
