@@ -4,6 +4,9 @@ Javascript interpreter written in C++.
 ## TODO List
 - [x] Support var declare statement: `var b = 2 * a - 4;`
 - [x] Support assign statement: `c = a * b / c;`
+- [ ] Make the calculation more accuracy by utilized the type information.
+- [x] Interactive mode.
+- [x] Debug mode.
 
 ## Context Free Grammar
 

@@ -67,12 +67,15 @@ private:
     ASTNode *parseTerm();
     ASTNode *parseFactor();
     static void printASTHelper(ASTNode *node, int depth);
+    bool debug = false;
     
 public:
     explicit Parser();
     void parseFile(std::string &filename);
+    ASTNode *parseInput(std::string input);
     ASTNode *getAST();
     void printAST();
+    void setDebugMode(bool enable);
 };
 
 #endif

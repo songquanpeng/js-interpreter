@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <utility>
 
 using namespace std;
 
@@ -12,6 +13,11 @@ Parser::Parser() {
 void Parser::parseFile(std::string &filename) {
     lexer.openFile(filename);
     parseProgram();
+}
+
+Parser::ASTNode *Parser::parseInput(string input) {
+    lexer.tokenizeInput(std::move(input));
+    return parseStatement();
 }
 
 // Load next token.
@@ -43,6 +49,7 @@ void Parser::error(const string &message, Lexer::Token token) {
 }
 
 void Parser::log(const string &message, Lexer::Token token) {
+    if (!debug) return;
     cout << "[Parser] [Log]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
 }
 
@@ -382,6 +389,7 @@ Parser::ASTNode *Parser::parseFunction() {
     return node;
 }
 
-
-
-
+void Parser::setDebugMode(bool enable) {
+    debug = enable;
+    lexer.setDebugMode(enable);
+}

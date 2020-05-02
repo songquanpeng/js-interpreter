@@ -10,6 +10,10 @@ Lexer::Lexer() {
     initKeywordsAndSymbols();
 }
 
+void Lexer::tokenizeInput(string i) {
+    this->input = i;
+}
+
 void Lexer::openFile(const string &filename) {
     file.open(filename) ;
     if(file.fail()) {
@@ -78,13 +82,20 @@ bool Lexer::isSymbol(const string &str) {
 char Lexer::nextChar() {
     if(rowBufferPos >= rowBuffer.size()) {
         rowNumber++;
-        getline(file, rowBuffer);
-        rowBuffer += '\n';
-        if(!file.fail()) {
+        if(input.empty()) { // Tokenize file.
+            getline(file, rowBuffer);
+            rowBuffer += '\n';
+            if(!file.fail()) {
+                rowBufferPos = 0;
+                return rowBuffer[rowBufferPos++];
+            } else {
+                return EOF;
+            }
+        } else { // Tokenize input string.
+            rowBuffer = input;
+            rowBuffer += '\n';
             rowBufferPos = 0;
             return rowBuffer[rowBufferPos++];
-        } else {
-            return EOF;
         }
     } else {
         return rowBuffer[rowBufferPos++];
@@ -186,7 +197,7 @@ Lexer::Token Lexer::nextToken() {
             token.type = CHAR;
             break;
         }        
-        // Contruct symbol token.
+        // Construct symbol token.
         std::string str(1, currentChar);
         if(Lexer::isSymbol(str)) {
             token.type = Lexer::SYMBOL;
@@ -209,17 +220,17 @@ Lexer::Token Lexer::nextToken() {
             }
             break;
         }
-        error("unexpected character " + currentChar, currentChar);        
+        error(&"unexpected character " [ currentChar], currentChar);
     }
     token.rowNumber = rowNumber;
     return token;
 }
 
 void Lexer::print(Lexer::Token token) {
-    cout << tokenToString(token) << endl;
+    cout << tokenToString(std::move(token)) << endl;
 }
 
-string Lexer::tokenToString(Lexer::Token token) {
+string Lexer::tokenToString(const Lexer::Token& token) {
     std::string tokenType;
     std::string tokenValue = token.value;
     switch(token.type) {
@@ -233,13 +244,13 @@ string Lexer::tokenToString(Lexer::Token token) {
         case Lexer::NONE: tokenType = "NONE";break;
         case Lexer::ERROR: tokenType = "ERROR";break;
         case Lexer::END_OF_FILE: tokenType = "END_OF_FILE";break;
-        default: error("unexpected token type: " + token.type, '\0');
+        default: error(&"unexpected token type: " [ token.type], '\0');
     }
     return "<" + tokenType + ", " + tokenValue + ", " + to_string(token.rowNumber) + ">";
 }
 
 
-void Lexer::error(std::string message, char currentChar) {
+void Lexer::error(const std::string& message, char currentChar) {
     if(currentChar != '\0') {
         cerr << "[Lexer] [Error]: " << message << " when process character '" << currentChar << "' at row " << rowNumber << " col " << rowBufferPos << "." <<endl; 
     } else {
@@ -247,3 +258,8 @@ void Lexer::error(std::string message, char currentChar) {
     }
     exit(-1);
 }
+
+void Lexer::setDebugMode(bool enable) {
+    debug = enable;
+}
+

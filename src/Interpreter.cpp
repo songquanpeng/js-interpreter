@@ -12,12 +12,50 @@ void Interpreter::interpretFile(string &filename) {
     printVariableTable();
 }
 
+void Interpreter::shell() {
+    cout << "Welcome to Node.js v12.16.1.\n"
+            "Type \".help\" for more information." << endl;
+    while (true) {
+        cout << "> ";
+        string input;
+        getline(cin, input);
+        if (input.empty()) continue;
+        if (!shellExecute(input)) break;
+    }
+}
+
+bool Interpreter::shellExecute(const string &input) {
+    if (input == ".exit") {
+        return false;
+    } else if (input == ".show") {
+        printVariableTable();
+        return true;
+    } else if (input == ".debug") {
+        setDebugMode(true);
+        cout << "Debug mode enabled." << endl;
+        return true;
+    } else if (input == ".help") {
+        cout << ".help     Print this help message\n"
+             << ".exit     Exit the repl\n"
+             << ".show     Print the variable table\n"
+             << ".debug    Enable debug mode\n"
+             << endl
+             << "Press ^C to exit the repl" << endl;
+        return true;
+    }
+    Parser::ASTNode *node = parser.parseInput(input);
+    string output = visitNode(node);
+    cout << (output.empty() ? "undefined" : output) << endl;
+    return true;
+}
+
 void Interpreter::error(const string &message, const std::string &extra) {
     cerr << "[Interpreter] [Error]: " << message << extra << endl;
     exit(-1);
 }
 
 void Interpreter::log(const string &message, const std::string &extra) {
+    if (!debug) return;
     cout << "[Interpreter] [Log]: " << message << extra << endl;
 }
 
@@ -135,22 +173,22 @@ string Interpreter::binaryOpt(const string &opt, const string &left, const strin
 
 void Interpreter::printVariableTable() {
     cout << "Variable Table" << endl;
-    cout << "+--------------------+" << endl;
+    cout << "+------------------------------+" << endl;
     cout << "| " << std::left << setw(3) << "ID"
          << "| " << std::left << setw(2) << "T"
-         << "| " << std::left << setw(10) << "Value"
+         << "| " << std::left << setw(20) << "Value"
          << "| " << endl;
-    cout << "+--------------------+" << endl;
+    cout << "+------------------------------+" << endl;
     for (const auto &e : variableTable) {
         cout << "| " << std::left << setw(3) << e.first
              << "| " << std::left << setw(2) << e.second.type
-             << "| " << std::left << setw(10) << e.second.value
+             << "| " << std::left << setw(20) << e.second.value
              << "| " << endl;
     }
-    cout << "+--------------------+" << endl;
+    cout << "+------------------------------+" << endl;
 }
 
-
-
-
-
+void Interpreter::setDebugMode(bool enable) {
+    debug = enable;
+    parser.setDebugMode(enable);
+}

@@ -27,14 +27,16 @@ struct Token {
 
 private:
     std::string rowBuffer; // Store current row.
-    unsigned rowBufferPos; // Pointer postion for row buffer.
+    unsigned rowBufferPos; // Pointer position for row buffer.
     unsigned rowNumber; // Current row.
     std::ifstream file; // File input stream object.
+    std::string input;
     char nextChar(); // Get next char.
     void rollBack(); // Roll back line buffer (rowBufferPos--).
     void initKeywordsAndSymbols();
     bool isKeyword(std::string const& str);
     bool isSymbol(std::string const& str);
+    bool debug = false;
 
 public:
     std::set<std::string> keywords;
@@ -42,11 +44,13 @@ public:
     Lexer(); // Constructor function.
     void openFile(std::string const& filename); // Open source file.
     void closeFile(); // Close source file.
+    void tokenizeInput(std::string i);
     Token nextToken(); // Get next token.
     void resetRow(); // Reset rowNumber to 0.
     void print(Token token); // Print token.
-    std::string tokenToString(Token token); // Convert token to string.
-    void error(std::string message, char currentChar);
+    std::string tokenToString(const Token& token); // Convert token to string.
+    void error(const std::string& message, char currentChar);
+    void setDebugMode(bool enable);
 };
 
 #endif
