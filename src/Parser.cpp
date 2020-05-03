@@ -73,7 +73,8 @@ Parser::ASTNode *Parser::parseStatementList() {
     ASTNode *node = parseStatement();
     ASTNode *current = node;
     Lexer::Token token = getToken();
-    while (token.value == "var" || token.value == "function" ||
+    while (token.value == "var" || token.value == "const" ||
+           token.value == "let" || token.value == "function" ||
            token.type == Lexer::ID || token.value == "if" ||
            token.value == "while" || token.value == "return") {
         restoreToken();
@@ -97,7 +98,7 @@ Parser::ASTNode *Parser::parseStatement() {
     } else if (token.value == "return") {
         restoreToken();
         node = parseReturnStatement();
-    } else if (token.value == "var") {
+    } else if (token.value == "var" || token.value == "let" || token.value == "const") {
         restoreToken();
         node = parseDeclareStatement();
     } else if (token.value == "function") {
@@ -109,7 +110,6 @@ Parser::ASTNode *Parser::parseStatement() {
             restoreToken();
             restoreToken();
             node = parseAssignStatement();
-
         } else if (token.value == "(") {
             restoreToken();
             restoreToken();
@@ -117,7 +117,25 @@ Parser::ASTNode *Parser::parseStatement() {
             token = getToken();
             assert(token.value == ";");
         } else {
-            error("only '=' and '(' are allowed here", token);
+            // Four cases:
+            // ID EOL
+            // ID ; EOL
+            // ID ;
+            // ID
+            restoreToken(); // Return the token after the ID token.
+            restoreToken(); // Return the ID token.
+            token = getToken(); // Get the ID token back.
+            Lexer::Token nextToken = getToken(); // Discard token if its EOL or `;`.
+            if(nextToken.type != Lexer::END_OF_LINE && nextToken.value != ";") {
+                restoreToken();
+            } else {
+                nextToken = getToken();
+                if(nextToken.type != Lexer::END_OF_LINE) restoreToken();
+            }
+            node = new ASTNode;
+            node->type = VAR_NODE;
+            node->token = token;
+            log("this statement only has one ID", token);
         }
     } else {
         error("no statement start with this unexpected token", token);
@@ -125,12 +143,11 @@ Parser::ASTNode *Parser::parseStatement() {
     return node;
 }
 
-
 Parser::ASTNode *Parser::parseDeclareStatement() {
     auto *node = new ASTNode;
     node->type = VAR_DECLARE_NODE;
     Lexer::Token token = getToken();
-    assert(token.value == "var");
+    assert(token.value == "var" || token.value == "let" || token.value == "const");
     token = getToken();
     assert(token.type == Lexer::ID);
     node->token = token;

@@ -80,12 +80,14 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
         case Parser::VAR_NODE: {
             map<string, Interpreter::Variable>::iterator iter;
             iter = variableTable.find(node->token.value);
+            string result;
             if (iter != variableTable.end()) {
-                return iter->second.value;
+                result =  iter->second.value;
             } else {
                 log("cannot find required variable in variableTable: ", node->token.value);
-                return "";
             }
+            visitNode(node->next);
+            return result;
         }
         case Parser::BINARY_OPERATOR_NODE: {
             string opt = node->token.value;
@@ -111,7 +113,7 @@ string Interpreter::visitDeclareNode(Parser::ASTNode *node) {
     var.value = visitNode(node->child[0]);
     variableTable.insert({varName, var});
     visitNode(node->next);
-    return "";
+    return var.value;
 }
 
 string Interpreter::visitAssignNode(Parser::ASTNode *node) {
@@ -129,13 +131,13 @@ string Interpreter::visitAssignNode(Parser::ASTNode *node) {
         variableTable.insert({varName, var});
     }
     visitNode(node->next);
-    return "";
+    return var.value;
 }
 
 string Interpreter::visitExpressionNode(Parser::ASTNode *node) {
     assert(node->type == Parser::EXPRESSION_NODE);
     if (node->child[1] == nullptr) {
-        if(node->token.type == Lexer::ID) {
+        if(node->token.type == Lexer::ID) { // TODO: consider function call here
             return getVariableValue(node->token.value);
         }
         return node->token.value;
@@ -207,19 +209,19 @@ string Interpreter::binaryOpt(const string &opt, const string &left, const strin
 
 void Interpreter::printVariableTable() {
     cout << "Variable Table" << endl;
-    cout << "+------------------------------+" << endl;
+    cout << "+----+---+---------------------+" << endl;
     cout << "| " << std::left << setw(3) << "ID"
          << "| " << std::left << setw(2) << "T"
          << "| " << std::left << setw(20) << "Value"
          << "| " << endl;
-    cout << "+------------------------------+" << endl;
+    cout << "+----+---+---------------------+" << endl;
     for (const auto &e : variableTable) {
         cout << "| " << std::left << setw(3) << e.first
              << "| " << std::left << setw(2) << e.second.type
              << "| " << std::left << setw(20) << e.second.value
              << "| " << endl;
     }
-    cout << "+------------------------------+" << endl;
+    cout << "+----+---+---------------------+" << endl;
 }
 
 void Interpreter::setDebugMode(bool enable) {

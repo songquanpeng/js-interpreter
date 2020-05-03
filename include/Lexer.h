@@ -17,7 +17,8 @@ public:
         SYMBOL,
         NONE,
         ERROR,
-        END_OF_FILE // EOF
+        END_OF_FILE, // EOF
+        END_OF_LINE // Used in interactive mode
     };
 struct Token {
         TokenType type; // Token's type.

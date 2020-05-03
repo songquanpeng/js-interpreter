@@ -10,7 +10,8 @@ Javascript interpreter written in C++.
 - [x] Support if statement.
 - [ ] Support while loop statement.
 - [ ] Support for loop statement.
-- [ ] Support function.
+- [ ] Support function definition.
+- [ ] Support function call.
 - [ ] Support class.
 - [ ] Support multi-level scope.
 - [ ] Implement necessary built-in functions.
