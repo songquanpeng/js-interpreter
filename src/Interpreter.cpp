@@ -121,6 +121,8 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
             return visitNegativeNode(node);
         case Parser::IF_NODE:
             return visitIfNode(node);
+        case Parser::WHILE_NODE:
+            return visitWhileNode(node);
         default:
             error("unexpected node type: ", to_string(node->type));
             return "";
@@ -165,7 +167,7 @@ string Interpreter::visitExpressionNode(Parser::ASTNode *node) {
 string Interpreter::visitNegativeNode(Parser::ASTNode *node) {
     string result = visitNode(node->child[0]);
     if (!result.empty() && result[0] == '-') {
-        result = result.substr(1, result.size() - 2);
+        result = result.substr(1, result.size() - 1);
     } else {
         result = string("-") + result;
     }
@@ -231,5 +233,15 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
         error("unexpected operator: ", opt);
         return "";
     }
+}
+
+string Interpreter::visitWhileNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::WHILE_NODE);
+    string condition = visitNode(node->child[0]);
+    while (condition != "0" && condition != "false" && !condition.empty()) {
+        visitNode(node->child[1]);
+        condition = visitNode(node->child[0]);
+    }
+    return "";
 }
 
