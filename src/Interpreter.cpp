@@ -59,6 +59,39 @@ void Interpreter::log(const string &message, const std::string &extra) {
     cout << "[Interpreter] [Log]: " << message << extra << endl;
 }
 
+void Interpreter::printVariableTable() {
+    cout << "Variable Table" << endl;
+    cout << "+----+---+---------------------+" << endl;
+    cout << "| " << std::left << setw(3) << "ID"
+         << "| " << std::left << setw(2) << "T"
+         << "| " << std::left << setw(20) << "Value"
+         << "| " << endl;
+    cout << "+----+---+---------------------+" << endl;
+    for (const auto &e : variableTable) {
+        cout << "| " << std::left << setw(3) << e.first
+             << "| " << std::left << setw(2) << e.second.type
+             << "| " << std::left << setw(20) << e.second.value
+             << "| " << endl;
+    }
+    cout << "+----+---+---------------------+" << endl;
+}
+
+void Interpreter::setDebugMode(bool enable) {
+    debug = enable;
+    parser.setDebugMode(enable);
+}
+
+string Interpreter::getVariableValue(const string &name) {
+    map<string, Interpreter::Variable>::iterator iter;
+    iter = variableTable.find(name);
+    if (iter != variableTable.end()) {
+        return iter->second.value;
+    } else {
+        log("use undefined variable: ", name);
+        return "";
+    }
+}
+
 string Interpreter::visitNode(Parser::ASTNode *node) {
     if (node == nullptr) {
         log("visitNode: given node is nullptr");
@@ -78,16 +111,7 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
         case Parser::BOOL_NODE:
             return node->token.value;
         case Parser::VAR_NODE: {
-            map<string, Interpreter::Variable>::iterator iter;
-            iter = variableTable.find(node->token.value);
-            string result;
-            if (iter != variableTable.end()) {
-                result = iter->second.value;
-            } else {
-                log("cannot find required variable in variableTable: ", node->token.value);
-            }
-            visitNode(node->next);
-            return result;
+            return getVariableValue(node->token.value);
         }
         case Parser::BINARY_OPERATOR_NODE:
             return visitBinaryOperatorNode(node);
@@ -166,10 +190,6 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
     string opt = node->token.value;
     string left = visitNode(node->child[0]);
     string right = visitNode(node->child[1]);
-    return binaryOpt(opt, left, right);
-}
-
-string Interpreter::binaryOpt(const string &opt, const string &left, const string &right) {
     double lv, rv;
     try {
         lv = stof(left);
@@ -213,35 +233,3 @@ string Interpreter::binaryOpt(const string &opt, const string &left, const strin
     }
 }
 
-void Interpreter::printVariableTable() {
-    cout << "Variable Table" << endl;
-    cout << "+----+---+---------------------+" << endl;
-    cout << "| " << std::left << setw(3) << "ID"
-         << "| " << std::left << setw(2) << "T"
-         << "| " << std::left << setw(20) << "Value"
-         << "| " << endl;
-    cout << "+----+---+---------------------+" << endl;
-    for (const auto &e : variableTable) {
-        cout << "| " << std::left << setw(3) << e.first
-             << "| " << std::left << setw(2) << e.second.type
-             << "| " << std::left << setw(20) << e.second.value
-             << "| " << endl;
-    }
-    cout << "+----+---+---------------------+" << endl;
-}
-
-void Interpreter::setDebugMode(bool enable) {
-    debug = enable;
-    parser.setDebugMode(enable);
-}
-
-string Interpreter::getVariableValue(const string &name) {
-    map<string, Interpreter::Variable>::iterator iter;
-    iter = variableTable.find(name);
-    if (iter != variableTable.end()) {
-        return iter->second.value;
-    } else {
-        log("use undefined variable: ", name);
-        return "";
-    }
-}
