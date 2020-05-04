@@ -82,21 +82,19 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
             iter = variableTable.find(node->token.value);
             string result;
             if (iter != variableTable.end()) {
-                result =  iter->second.value;
+                result = iter->second.value;
             } else {
                 log("cannot find required variable in variableTable: ", node->token.value);
             }
             visitNode(node->next);
             return result;
         }
-        case Parser::BINARY_OPERATOR_NODE: {
-            string opt = node->token.value;
-            string left = visitNode(node->child[0]);
-            string right = visitNode(node->child[1]);
-            return binaryOpt(opt, left, right);
-        }
+        case Parser::BINARY_OPERATOR_NODE:
+            return visitBinaryOperatorNode(node);
         case Parser::NONE:
             return "";
+        case Parser::NEGATIVE_NODE:
+            return visitNegativeNode(node);
         case Parser::IF_NODE:
             return visitIfNode(node);
         default:
@@ -136,26 +134,27 @@ string Interpreter::visitAssignNode(Parser::ASTNode *node) {
 
 string Interpreter::visitExpressionNode(Parser::ASTNode *node) {
     assert(node->type == Parser::EXPRESSION_NODE);
-    if (node->child[1] == nullptr) {
-        if(node->token.type == Lexer::ID) { // TODO: consider function call here
-            return getVariableValue(node->token.value);
-        }
-        return node->token.value;
+    return visitNode(node->child[0]);
+}
+
+
+string Interpreter::visitNegativeNode(Parser::ASTNode *node) {
+    string result = visitNode(node->child[0]);
+    if (!result.empty() && result[0] == '-') {
+        result = result.substr(1, result.size() - 2);
     } else {
-        string opt = node->token.value;
-        string left = visitNode(node->child[0]);
-        string right = visitNode(node->child[1]);
-        return binaryOpt(opt, left, right);
+        result = string("-") + result;
     }
+    return result;
 }
 
 string Interpreter::visitIfNode(Parser::ASTNode *node) {
     assert(node->type == Parser::IF_NODE);
     string condition = visitNode(node->child[0]);
-    if(condition != "0" && condition != "false" && !condition.empty()) {
+    if (condition != "0" && condition != "false" && !condition.empty()) {
         return visitNode(node->child[1]);
     } else {
-        if( node->child[2] != nullptr) {
+        if (node->child[2] != nullptr) {
             return visitNode(node->child[2]);
         } else {
             return "";
@@ -163,18 +162,25 @@ string Interpreter::visitIfNode(Parser::ASTNode *node) {
     }
 }
 
+string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
+    string opt = node->token.value;
+    string left = visitNode(node->child[0]);
+    string right = visitNode(node->child[1]);
+    return binaryOpt(opt, left, right);
+}
+
 string Interpreter::binaryOpt(const string &opt, const string &left, const string &right) {
-    double  lv, rv;
+    double lv, rv;
     try {
         lv = stof(left);
     } catch (std::invalid_argument &e) {
-        if(left == "false") lv = 0;
+        if (left == "false") lv = 0;
         else lv = 1;
     }
     try {
         rv = stof(right);
     } catch (std::invalid_argument &e) {
-        if(right == "false") rv = 0;
+        if (right == "false") rv = 0;
         else rv = 1;
     }
     if (opt == "+") {
@@ -229,7 +235,7 @@ void Interpreter::setDebugMode(bool enable) {
     parser.setDebugMode(enable);
 }
 
-string Interpreter::getVariableValue(const string& name) {
+string Interpreter::getVariableValue(const string &name) {
     map<string, Interpreter::Variable>::iterator iter;
     iter = variableTable.find(name);
     if (iter != variableTable.end()) {

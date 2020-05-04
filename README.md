@@ -5,6 +5,7 @@ Javascript interpreter written in C++.
 - [x] Support var declare statement: `var b = 2 * a - 4;`
 - [x] Support assign statement: `c = a * b / c;`
 - [ ] Make the calculation more accuracy by utilized the type information.
+- [x] Support negative number. 
 - [x] Interactive mode.
 - [x] Debug mode.
 - [x] Support if statement.
@@ -17,6 +18,7 @@ Javascript interpreter written in C++.
 - [ ] Implement necessary built-in functions.
     - [ ] output(value)
     - [ ] input(prompt)
+- [ ] When error occurred in interactive mode, do not exit but try to recover.
 
 ## Context Free Grammar
 
@@ -76,7 +78,10 @@ term -> factor
       | term * factor
       | term / factor
 
-factor -> REAL
+factor -> positive_factor
+        | - positive_factor
+
+positive_factor -> REAL
         | INT
         | CHAR
         | STRING

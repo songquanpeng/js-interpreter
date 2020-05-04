@@ -27,7 +27,8 @@ public:
         STRING_NODE,
         CHAR_NODE,
         BOOL_NODE,
-        WHILE_NODE
+        WHILE_NODE,
+        NEGATIVE_NODE
     };
     class ASTNode {
     public:
@@ -66,6 +67,7 @@ private:
     ASTNode *parseAdditiveExpression();
     ASTNode *parseTerm();
     ASTNode *parseFactor();
+    ASTNode *parsePositiveFactor();
     static void printASTHelper(ASTNode *node, int depth);
     bool debug = false;
     

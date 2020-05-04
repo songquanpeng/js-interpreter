@@ -30,6 +30,8 @@ private:
     string visitAssignNode(Parser::ASTNode *node);
     string visitExpressionNode(Parser::ASTNode *node);
     string visitIfNode(Parser::ASTNode *node);
+    string visitNegativeNode(Parser::ASTNode *node);
+    string visitBinaryOperatorNode(Parser::ASTNode *node);
     static void error(const std::string& message, const std::string& extra="");
     void log(const std::string& message, const std::string& extra="");
     static string binaryOpt(const string& opt, const string& left, const string& right);

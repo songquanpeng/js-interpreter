@@ -126,11 +126,11 @@ Parser::ASTNode *Parser::parseStatement() {
             restoreToken(); // Return the ID token.
             token = getToken(); // Get the ID token back.
             Lexer::Token nextToken = getToken(); // Discard token if its EOL or `;`.
-            if(nextToken.type != Lexer::END_OF_LINE && nextToken.value != ";") {
+            if (nextToken.type != Lexer::END_OF_LINE && nextToken.value != ";") {
                 restoreToken();
             } else {
                 nextToken = getToken();
-                if(nextToken.type != Lexer::END_OF_LINE) restoreToken();
+                if (nextToken.type != Lexer::END_OF_LINE) restoreToken();
             }
             node = new ASTNode;
             node->type = VAR_NODE;
@@ -286,7 +286,6 @@ Parser::ASTNode *Parser::parseArgumentList() {
 
 Parser::ASTNode *Parser::parseExpression() {
     auto *node = parseAdditiveExpression();
-    node->type = EXPRESSION_NODE;
     Lexer::Token token = getToken();
     if (token.value == "<=" || token.value == ">=" || token.value == "==" ||
         token.value == "<" || token.value == ">" || token.value == "!=" ||
@@ -300,9 +299,11 @@ Parser::ASTNode *Parser::parseExpression() {
     } else {
         restoreToken();
     }
-    return node;
+    auto *result = new ASTNode;
+    result->type = EXPRESSION_NODE;
+    result->child[0] = node;
+    return result;
 }
-
 
 Parser::ASTNode *Parser::parseAdditiveExpression() {
     ASTNode *node = parseTerm();
@@ -318,7 +319,6 @@ Parser::ASTNode *Parser::parseAdditiveExpression() {
     }
     restoreToken();
     return node;
-
 }
 
 Parser::ASTNode *Parser::parseTerm() {
@@ -338,6 +338,20 @@ Parser::ASTNode *Parser::parseTerm() {
 }
 
 Parser::ASTNode *Parser::parseFactor() {
+    Lexer::Token token = getToken();
+    if (token.value == "-") {
+        auto *node = new ASTNode;
+        node->token = token;
+        node->child[0] = parsePositiveFactor();
+        node->type = NEGATIVE_NODE;
+        return node;
+    } else {
+        restoreToken();
+        return parsePositiveFactor();
+    }
+}
+
+Parser::ASTNode *Parser::parsePositiveFactor() {
     ASTNode *node = nullptr;
     Lexer::Token token = getToken();
     if (token.value == "(") {
