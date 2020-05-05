@@ -153,6 +153,16 @@ Parser::ASTNode *Interpreter::getFunction(const std::string &name) {
     return nullptr;
 }
 
+string Interpreter::input() {
+    string input;
+    getline(cin, input);
+    return input;
+}
+
+void Interpreter::output(const string& value) {
+    cout << value << endl;
+}
+
 string Interpreter::visitNode(Parser::ASTNode *node) {
     if (node == nullptr) {
         log("visitNode: given node is nullptr");
@@ -268,6 +278,9 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
         else rv = 1;
     }
     if (opt == "+") {
+        if (node->child[0]->type == Parser::STRING_NODE) {
+            return left + right;
+        }
         return to_string(lv + rv);
     } else if (opt == "-") {
         return to_string(lv - rv);
@@ -341,20 +354,29 @@ string Interpreter::visitFunctionDeclareNode(Parser::ASTNode *node) {
 
 string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
     enterScope();
-    // First we should initialize the parameters with arguments.
-    Parser::ASTNode *functionNode = getFunction(node->token.value);
-    Parser::ASTNode *argumentNode = functionNode->child[0];
+    string result;
+    string functionName = node->token.value;
     Parser::ASTNode *parameterNode = node->child[0];
-    while (argumentNode != nullptr && parameterNode != nullptr) {
-        Variable var;
-        var.type = argumentNode->token.type;
-        var.value = visitNode(parameterNode);
-        declareVariable(argumentNode->token.value, var);
-        argumentNode = argumentNode->next;
-        parameterNode = parameterNode->next;
+    if (functionName == "input") {
+        result = input();
+    } else if (functionName == "output") {
+        string outputValue = visitNode(parameterNode);
+        output(outputValue);
+    } else {
+        // First we should initialize the parameters with arguments.
+        Parser::ASTNode *functionNode = getFunction(functionName);
+        Parser::ASTNode *argumentNode = functionNode->child[0];
+        while (argumentNode != nullptr && parameterNode != nullptr) {
+            Variable var;
+            var.type = argumentNode->token.type;
+            var.value = visitNode(parameterNode);
+            declareVariable(argumentNode->token.value, var);
+            argumentNode = argumentNode->next;
+            parameterNode = parameterNode->next;
+        }
+        // The we execute this function's body.
+        result = visitNode(functionNode->child[1]);
     }
-    // The we execute this function's AST tree.
-    string result = visitNode(functionNode->child[1]);
     exitScope();
     visitNode(node->next);
     return result;
@@ -364,4 +386,3 @@ string Interpreter::visitReturnNode(Parser::ASTNode *node) {
     assert(node->type == Parser::RETURN_NODE);
     return visitNode(node->child[0]);
 }
-

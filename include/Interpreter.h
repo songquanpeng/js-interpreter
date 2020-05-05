@@ -37,6 +37,8 @@ private:
     static void error(const std::string& message, const std::string& extra="");
     void log(const std::string& message, const std::string& extra="");
     bool shellExecute(const string& input);
+    static string input();
+    static void output(const std::string& str);
     string visitNode(Parser::ASTNode *node);
     string visitDeclareNode(Parser::ASTNode *node);
     string visitAssignNode(Parser::ASTNode *node);

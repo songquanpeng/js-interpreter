@@ -15,9 +15,9 @@ Javascript interpreter written in C++.
 - [x] Support function call.
 - [ ] Support class.
 - [x] Support multi-level scope.
-- [ ] Implement necessary built-in functions.
-    - [ ] output(value)
-    - [ ] input()
+- [x] Implement necessary built-in functions.
+    - [x] output(str)
+    - [x] input()
 - [ ] When error occurred in interactive mode, do not exit but try to recover.
 - [ ] ~~Fix the operator's priority problem.~~ (Always use parentheses can avoid this problem)
 
