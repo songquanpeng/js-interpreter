@@ -24,7 +24,16 @@ void Interpreter::shell() {
     while (true) {
         cout << "> ";
         string input;
-        getline(cin, input);
+        string line;
+        getline(cin, line);
+        if (!line.empty() && line[line.size() - 1] == '{') {
+            do {
+                cout << "... ";
+                input += line;
+            } while (getline(cin, line) && (!line.empty())
+                     && line[line.size() - 1] != '}');
+        }
+        input += line;
         if (input.empty()) continue;
         if (!shellExecute(input)) break;
     }
@@ -159,7 +168,7 @@ string Interpreter::input() {
     return input;
 }
 
-void Interpreter::output(const string& value) {
+void Interpreter::output(const string &value) {
     cout << value << endl;
 }
 

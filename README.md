@@ -20,6 +20,11 @@ Javascript interpreter written in C++.
     - [x] input()
 - [ ] When error occurred in interactive mode, do not exit but try to recover.
 - [ ] ~~Fix the operator's priority problem.~~ (Always use parentheses can avoid this problem)
+- [ ] Support more operators:
+    - [ ] %
+    - [ ] ===
+    - [ ] !==
+- [ ] Support array.
 
 ## Context Free Grammar
 
