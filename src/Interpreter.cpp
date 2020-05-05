@@ -5,6 +5,12 @@
 
 using namespace std;
 
+Interpreter::Interpreter() {
+    variableTable.push_back(new map<string, Variable>);
+    scopeLevel = 0;
+    root = nullptr;
+}
+
 void Interpreter::interpretFile(string &filename) {
     parser.parseFile(filename);
     root = parser.getAST();
@@ -67,13 +73,17 @@ void Interpreter::printVariableTable() {
          << "| " << std::left << setw(20) << "Value"
          << "| " << endl;
     cout << "+----+---+---------------------+" << endl;
-    for (const auto &e : variableTable) {
-        cout << "| " << std::left << setw(3) << e.first
-             << "| " << std::left << setw(2) << e.second.type
-             << "| " << std::left << setw(20) << e.second.value
-             << "| " << endl;
+    for (int i = scopeLevel; i >= 0; --i) {
+        map<string, Variable> *scope = variableTable[i];
+        map<string, Interpreter::Variable>::iterator iter;
+        for (const auto &e : *scope) {
+            cout << "| " << std::left << setw(3) << e.first
+                 << "| " << std::left << setw(2) << e.second.type
+                 << "| " << std::left << setw(20) << e.second.value
+                 << "| " << endl;
+        }
+        cout << "+----+---+---------------------+" << endl;
     }
-    cout << "+----+---+---------------------+" << endl;
 }
 
 void Interpreter::setDebugMode(bool enable) {
@@ -81,29 +91,59 @@ void Interpreter::setDebugMode(bool enable) {
     parser.setDebugMode(enable);
 }
 
-bool Interpreter::declareVariable(const std::string& name, const Variable& variable) {
+void Interpreter::enterScope() {
+    assert(variableTable.size() == scopeLevel + 1);
+    scopeLevel++;
+    variableTable.push_back(new map<string, Variable>);
+}
+
+void Interpreter::exitScope() {
+    scopeLevel--;
+    variableTable.pop_back();
+    assert(variableTable.size() == scopeLevel + 1);
+}
+
+bool Interpreter::declareVariable(const std::string &name, const Variable &variable) {
+    map<string, Variable> *scope = variableTable[scopeLevel];
     map<string, Variable>::iterator iter;
-    iter = variableTable.find(name);
-    if (iter != variableTable.end()) {
+    iter = scope->find(name);
+    if (iter != scope->end()) {
         log("define a variable multiple times: ", name);
     }
-    variableTable.insert({name, variable});
+    scope->insert({name, variable});
     return true;
 }
 
-string Interpreter::getVariableValue(const string &name) {
-    map<string, Interpreter::Variable>::iterator iter;
-    iter = variableTable.find(name);
-    if (iter != variableTable.end()) {
-        return iter->second.value;
-    } else {
-        log("use undefined variable: ", name);
-        return "";
+bool Interpreter::setVariableValue(const std::string &name, const Variable &variable) {
+    bool success = false;
+    for (int i = scopeLevel; i >= 0; --i) {
+        map<string, Variable> *scope = variableTable[i];
+        map<string, Interpreter::Variable>::iterator iter;
+        iter = scope->find(name);
+        if (iter != scope->end()) {
+            iter->second.value = variable.value;
+            success = true;
+            break;
+        }
     }
+    return success;
+}
+
+string Interpreter::getVariableValue(const string &name) {
+    for (int i = scopeLevel; i >= 0; --i) {
+        map<string, Variable> *scope = variableTable[i];
+        map<string, Interpreter::Variable>::iterator iter;
+        iter = scope->find(name);
+        if (iter != scope->end()) {
+            return iter->second.value;
+        }
+    }
+    log("use undefined variable: ", name);
+    return "";
 }
 
 Parser::ASTNode *Interpreter::getFunction(const std::string &name) {
-    map<string, Parser::ASTNode*>::iterator iter;
+    map<string, Parser::ASTNode *>::iterator iter;
     iter = functionTable.find(name);
     if (iter != functionTable.end()) {
         return iter->second;
@@ -174,14 +214,7 @@ string Interpreter::visitAssignNode(Parser::ASTNode *node) {
     Variable var;
     var.type = node->token.type;
     var.value = visitNode(node->child[0]);
-    map<string, Interpreter::Variable>::iterator iter;
-    iter = variableTable.find(node->token.value);
-    if (iter != variableTable.end()) {
-        iter->second.value = var.value;
-    } else {
-        log("assign value to a undefined variable", node->token.value);
-        variableTable.insert({varName, var});
-    }
+    setVariableValue(varName, var);
     visitNode(node->next);
     return var.value;
 }
@@ -207,10 +240,10 @@ string Interpreter::visitIfNode(Parser::ASTNode *node) {
     string result;
     string condition = visitNode(node->child[0]);
     if (condition != "0" && condition != "false" && !condition.empty()) {
-        result =  visitNode(node->child[1]);
+        result = visitNode(node->child[1]);
     } else {
         if (node->child[2] != nullptr) {
-            result =  visitNode(node->child[2]);
+            result = visitNode(node->child[2]);
         }
     }
     visitNode(node->next);
@@ -265,17 +298,20 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
 }
 
 string Interpreter::visitWhileNode(Parser::ASTNode *node) {
+    enterScope();
     assert(node->type == Parser::WHILE_NODE);
     string condition = visitNode(node->child[0]);
     while (condition != "0" && condition != "false" && !condition.empty()) {
         visitNode(node->child[1]);
         condition = visitNode(node->child[0]);
     }
+    exitScope();
     visitNode(node->next);
     return "";
 }
 
 string Interpreter::visitForNode(Parser::ASTNode *node) {
+    enterScope();
     assert(node->type == Parser::FOR_NODE);
     visitNode(node->child[0]); // Initialization
     string condition = visitNode(node->child[1]); // Condition
@@ -284,6 +320,7 @@ string Interpreter::visitForNode(Parser::ASTNode *node) {
         visitNode(node->child[2]); // Update
         condition = visitNode(node->child[1]); // Check condition
     }
+    exitScope();
     visitNode(node->next);
     return "";
 }
@@ -291,7 +328,7 @@ string Interpreter::visitForNode(Parser::ASTNode *node) {
 string Interpreter::visitFunctionDeclareNode(Parser::ASTNode *node) {
     assert(node->type == Parser::FUNCTION_DECLARE_NODE);
     string name = node->token.value;
-    map<string, Parser::ASTNode*>::iterator iter;
+    map<string, Parser::ASTNode *>::iterator iter;
     iter = functionTable.find(name);
     if (iter == functionTable.end()) {
         functionTable.insert({name, node});
@@ -303,10 +340,11 @@ string Interpreter::visitFunctionDeclareNode(Parser::ASTNode *node) {
 }
 
 string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
+    enterScope();
     // First we should initialize the parameters with arguments.
-    Parser::ASTNode* functionNode = getFunction(node->token.value);
-    Parser::ASTNode* argumentNode = functionNode->child[0];
-    Parser::ASTNode* parameterNode = node->child[0];
+    Parser::ASTNode *functionNode = getFunction(node->token.value);
+    Parser::ASTNode *argumentNode = functionNode->child[0];
+    Parser::ASTNode *parameterNode = node->child[0];
     while (argumentNode != nullptr && parameterNode != nullptr) {
         Variable var;
         var.type = argumentNode->token.type;
@@ -317,6 +355,7 @@ string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
     }
     // The we execute this function's AST tree.
     string result = visitNode(functionNode->child[1]);
+    exitScope();
     visitNode(node->next);
     return result;
 }
@@ -325,3 +364,4 @@ string Interpreter::visitReturnNode(Parser::ASTNode *node) {
     assert(node->type == Parser::RETURN_NODE);
     return visitNode(node->child[0]);
 }
+

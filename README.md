@@ -2,8 +2,8 @@
 Javascript interpreter written in C++.
 
 ## TODO List
-- [x] Support var declare statement: `var b = 2 * a - 4;`
-- [x] Support assign statement: `c = a * b / c;`
+- [x] Support variable declare statement.
+- [x] Support assign statement.
 - [x] Support negative number. 
 - [x] Interactive mode.
 - [x] Debug mode.
@@ -14,12 +14,12 @@ Javascript interpreter written in C++.
 - [x] Support function definition.
 - [x] Support function call.
 - [ ] Support class.
-- [ ] Support multi-level scope.
+- [x] Support multi-level scope.
 - [ ] Implement necessary built-in functions.
     - [ ] output(value)
     - [ ] input()
 - [ ] When error occurred in interactive mode, do not exit but try to recover.
-- [ ] Fix the operator's priority problem.
+- [ ] ~~Fix the operator's priority problem.~~ (Always use parentheses can avoid this problem)
 
 ## Context Free Grammar
 

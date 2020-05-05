@@ -15,22 +15,27 @@ public:
         Lexer::TokenType type;
         std::string value;
     };
+    Interpreter();
     void interpretFile(std::string& filename);
     void shell();
     void setDebugMode(bool enable);
 
 private:
     Parser parser;
-    std::map<std::string, Variable> variableTable;
     std::map<std::string, Parser::ASTNode*> functionTable;
+    std::vector<std::map<std::string, Variable>*> variableTable;
+    int scopeLevel;
+    void enterScope();
+    void exitScope();
     bool declareVariable(const std::string& name, const Variable& variable);
+    bool setVariableValue(const std::string& name, const Variable& variable);
     string getVariableValue(const std::string& name);
+    void printVariableTable();
     Parser::ASTNode* getFunction(const std::string& name);
     Parser::ASTNode *root;
     bool debug = false;
     static void error(const std::string& message, const std::string& extra="");
     void log(const std::string& message, const std::string& extra="");
-    void printVariableTable();
     bool shellExecute(const string& input);
     string visitNode(Parser::ASTNode *node);
     string visitDeclareNode(Parser::ASTNode *node);
