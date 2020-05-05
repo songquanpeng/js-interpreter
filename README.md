@@ -17,8 +17,9 @@ Javascript interpreter written in C++.
 - [ ] Support multi-level scope.
 - [ ] Implement necessary built-in functions.
     - [ ] output(value)
-    - [ ] input(prompt)
+    - [ ] input()
 - [ ] When error occurred in interactive mode, do not exit but try to recover.
+- [ ] Fix the operator's priority problem.
 
 ## Context Free Grammar
 
@@ -33,6 +34,7 @@ statement -> declare_statement ;
            | assign_statement ;
            | if_statement
            | while_statement
+           | for_statement
            | return_statement ;
            | call_expression ;
 
@@ -49,6 +51,8 @@ if_statement -> if ( expression ) { statement }
               | if ( expression ) { statement } else { statement }
 
 while_statement -> while ( expression ) { statement }
+
+for_statement -> for ( declare_statement ; expression ; assign_statement) { statement }
 
 return_statement -> return ; 
                   | return expression ;

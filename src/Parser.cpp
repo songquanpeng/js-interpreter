@@ -76,7 +76,8 @@ Parser::ASTNode *Parser::parseStatementList() {
     while (token.value == "var" || token.value == "const" ||
            token.value == "let" || token.value == "function" ||
            token.type == Lexer::ID || token.value == "if" ||
-           token.value == "while" || token.value == "return") {
+           token.value == "while" || token.value == "return" ||
+           token.value == "for") {
         restoreToken();
         current->next = parseStatement();
         current = current->next;
@@ -95,6 +96,9 @@ Parser::ASTNode *Parser::parseStatement() {
     } else if (token.value == "while") {
         restoreToken();
         node = parseWhileStatement();
+    } else if (token.value == "for") {
+        restoreToken();
+        node = parseForStatement();
     } else if (token.value == "return") {
         restoreToken();
         node = parseReturnStatement();
@@ -190,7 +194,7 @@ Parser::ASTNode *Parser::parseAssignStatement() {
     assert(token.value == "=");
     node->child[0] = parseExpression();
     token = getToken();
-    assert(token.value == ";");
+    if (token.value != ";") restoreToken();
     return node;
 }
 
@@ -235,6 +239,28 @@ Parser::ASTNode *Parser::parseWhileStatement() {
     token = getToken();
     assert(token.value == "{");
     node->child[1] = parseStatementList();
+    token = getToken();
+    assert(token.value == "}");
+    return node;
+}
+
+Parser::ASTNode *Parser::parseForStatement() {
+    auto *node = new ASTNode;
+    node->type = FOR_NODE;
+    Lexer::Token token = getToken();
+    assert(token.value == "for");
+    token = getToken();
+    assert(token.value == "(");
+    node->child[0] = parseDeclareStatement();
+    node->child[1] = parseExpression();
+    token = getToken();
+    assert(token.value == ";");
+    node->child[2] = parseAssignStatement();
+    token = getToken();
+    assert(token.value == ")");
+    token = getToken();
+    assert(token.value == "{");
+    node->child[3] = parseStatementList();
     token = getToken();
     assert(token.value == "}");
     return node;

@@ -37,6 +37,7 @@ private:
     string visitNegativeNode(Parser::ASTNode *node);
     string visitBinaryOperatorNode(Parser::ASTNode *node);
     string visitWhileNode(Parser::ASTNode *node);
+    string visitForNode(Parser::ASTNode *node);
 };
 
 

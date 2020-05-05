@@ -123,6 +123,8 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
             return visitIfNode(node);
         case Parser::WHILE_NODE:
             return visitWhileNode(node);
+        case Parser::FOR_NODE:
+            return visitForNode(node);
         default:
             error("unexpected node type: ", to_string(node->type));
             return "";
@@ -241,6 +243,18 @@ string Interpreter::visitWhileNode(Parser::ASTNode *node) {
     while (condition != "0" && condition != "false" && !condition.empty()) {
         visitNode(node->child[1]);
         condition = visitNode(node->child[0]);
+    }
+    return "";
+}
+
+string Interpreter::visitForNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::FOR_NODE);
+    visitNode(node->child[0]); // Initialization
+    string condition = visitNode(node->child[1]); // Condition
+    while (condition != "0" && condition != "false" && !condition.empty()) {
+        visitNode(node->child[3]); // Body
+        visitNode(node->child[2]); // Update
+        condition = visitNode(node->child[1]); // Check condition
     }
     return "";
 }

@@ -28,12 +28,13 @@ public:
         CHAR_NODE,
         BOOL_NODE,
         WHILE_NODE,
+        FOR_NODE,
         NEGATIVE_NODE
     };
     class ASTNode {
     public:
         Lexer::Token token;
-        ASTNode *child[3];
+        ASTNode *child[4];
         ASTNode *next;
         NodeType type;
         ASTNode() {
@@ -59,6 +60,7 @@ private:
     ASTNode *parseAssignStatement();
     ASTNode *parseIfStatement();
     ASTNode *parseWhileStatement();
+    ASTNode *parseForStatement();
     ASTNode *parseReturnStatement();
     ASTNode *parseFunction();
     ASTNode *parseCallExpression();
