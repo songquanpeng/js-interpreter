@@ -61,6 +61,11 @@ void Parser::printASTHelper(Parser::ASTNode *node, int depth) {
 
 }
 
+void Parser::setDebugMode(bool enable) {
+    debug = enable;
+    lexer.setDebugMode(enable);
+}
+
 Parser::ASTNode *Parser::getAST() {
     return root;
 }
@@ -119,7 +124,7 @@ Parser::ASTNode *Parser::parseStatement() {
             restoreToken();
             node = parseCallExpression();
             token = getToken();
-            assert(token.value == ";");
+            if (token.value != ";") restoreToken();
         } else {
             // Four cases:
             // ID EOL
@@ -159,7 +164,7 @@ Parser::ASTNode *Parser::parseDeclareStatement() {
     assert(token.value == "=");
     node->child[0] = parseExpression();
     token = getToken();
-    assert(token.value == ";");
+    if (token.value != ";") restoreToken();
     return node;
 }
 
@@ -274,7 +279,7 @@ Parser::ASTNode *Parser::parseReturnStatement() {
     node->type = RETURN_NODE;
     node->child[0] = parseExpression();
     token = getToken();
-    assert(token.value == ";");
+    if (token.value != ";") restoreToken();
     return node;
 }
 
@@ -311,9 +316,27 @@ Parser::ASTNode *Parser::parseArgumentList() {
     return parent;
 }
 
+Parser::ASTNode *Parser::parseFactorList() {
+    auto *node = parseFactor();
+    auto *parent = node;
+    auto token = getToken();
+    while (token.value == ",") {
+        node->next = parseFactor();
+        node = node->next;
+        token = getToken();
+    }
+    restoreToken();
+    return parent;
+}
+
 Parser::ASTNode *Parser::parseExpression() {
-    auto *node = parseAdditiveExpression();
     Lexer::Token token = getToken();
+    restoreToken();
+    if (token.value == "[") {
+        return parseArrayDeclareExpression();
+    }
+    auto *node = parseAdditiveExpression();
+    token = getToken();
     if (token.value == "<=" || token.value == ">=" || token.value == "==" ||
         token.value == "<" || token.value == ">" || token.value == "!=" ||
         token.value == "&&" || token.value == "||") {
@@ -413,6 +436,10 @@ Parser::ASTNode *Parser::parsePositiveFactor() {
             restoreToken();
             restoreToken();
             node = parseCallExpression();
+        } else if (token.value == "[") {
+            restoreToken();
+            restoreToken();
+            node = parseArrayAccessExpression();
         } else {
             restoreToken();
             restoreToken();
@@ -448,7 +475,27 @@ Parser::ASTNode *Parser::parseFunction() {
     return node;
 }
 
-void Parser::setDebugMode(bool enable) {
-    debug = enable;
-    lexer.setDebugMode(enable);
+Parser::ASTNode *Parser::parseArrayDeclareExpression() {
+    auto *node = new ASTNode;
+    node->type = ARRAY_DECLARE_NODE;
+    Lexer::Token token = getToken();
+    assert(token.value == "[");
+    node->child[0] = parseFactorList();
+    token = getToken();
+    assert(token.value == "]");
+    return node;
+}
+
+Parser::ASTNode *Parser::parseArrayAccessExpression() {
+    auto *node = new ASTNode;
+    node->type = ARRAY_ACCESS_NODE;
+    Lexer::Token token = getToken();
+    assert(token.type == Lexer::ID);
+    node->token = token;
+    token = getToken();
+    assert(token.value == "[");
+    node->child[0] = parseExpression();
+    token = getToken();
+    assert(token.value == "]");
+    return node;
 }

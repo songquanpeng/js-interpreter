@@ -25,6 +25,7 @@ Javascript interpreter written in C++.
     - [ ] ===
     - [ ] !==
 - [ ] Support array.
+- [x] Make the `;` optional.
 
 ## Context Free Grammar
 
@@ -41,7 +42,6 @@ statement -> declare_statement ;
            | while_statement
            | for_statement
            | return_statement ;
-           | call_expression ;
 
 declare_statement -> var ID = expression;
 
@@ -64,11 +64,19 @@ return_statement -> return ;
 
 call_expression -> ID ( argument_list )
 
+array_access_expression -> ID [expression]
+
 argument_list -> expression
                | expression , argument_list
 
 expression -> additive_expression relational_operator additive_expression
             | additive_expression
+            | array_declare_expression
+
+array_declare_expression -> [factor_list]
+
+factor_list -> factor
+             | factor_list
 
 relational_operator -> <=
                      | >=
@@ -97,6 +105,7 @@ positive_factor -> REAL
         | BOOL
         | ID
         | call_expression
+        | array_access_expression
         | ( expression )
 
 ```

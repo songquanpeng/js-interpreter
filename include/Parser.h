@@ -30,7 +30,9 @@ public:
         WHILE_NODE,
         FOR_NODE,
         NEGATIVE_NODE,
-        ARGUMENT_NODE
+        ARGUMENT_NODE,
+        ARRAY_ACCESS_NODE,
+        ARRAY_DECLARE_NODE
     };
     class ASTNode {
     public:
@@ -66,11 +68,14 @@ private:
     ASTNode *parseFunction();
     ASTNode *parseCallExpression();
     ASTNode *parseArgumentList();
+    ASTNode *parseFactorList();
     ASTNode *parseExpression();
     ASTNode *parseAdditiveExpression();
     ASTNode *parseTerm();
     ASTNode *parseFactor();
     ASTNode *parsePositiveFactor();
+    ASTNode *parseArrayDeclareExpression();
+    ASTNode *parseArrayAccessExpression();
     static void printASTHelper(ASTNode *node, int depth);
     bool debug = false;
     

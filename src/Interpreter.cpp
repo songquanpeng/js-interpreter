@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <iomanip>
+#include <ctime>
 
 using namespace std;
 
@@ -210,6 +211,10 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
             return visitFunctionCallNode(node);
         case Parser::RETURN_NODE:
             return visitReturnNode(node);
+        case Parser::ARRAY_ACCESS_NODE:
+            return visitArrayAccessNode(node);
+        case Parser::ARRAY_DECLARE_NODE:
+            return visitArrayDeclareNode(node);
         default:
             error("unexpected node type: ", to_string(node->type));
             return "";
@@ -394,4 +399,43 @@ string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
 string Interpreter::visitReturnNode(Parser::ASTNode *node) {
     assert(node->type == Parser::RETURN_NODE);
     return visitNode(node->child[0]);
+}
+
+string Interpreter::visitArrayDeclareNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::ARRAY_DECLARE_NODE);
+    string identifier("__array_" + to_string(time(nullptr)));
+    auto *store = new vector<string>;
+    auto *current = node->child[0];
+    while (current != nullptr) {
+        store->push_back(visitNode(current));
+        current = current->next;
+    }
+    arrayTable.insert({identifier, store});
+    return identifier;
+}
+
+string Interpreter::visitArrayAccessNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::ARRAY_ACCESS_NODE);
+    string arrayName = node->token.value;
+    vector<string> *v = getArray(arrayName);
+    string index = visitNode(node->child[0]);
+    int i = 0;
+    try {
+        i = stoi(index);
+    } catch (std::invalid_argument &e) {
+        i = 0;
+    }
+    return (*v)[i];
+}
+
+std::vector<string> *Interpreter::getArray(const std::string &name) {
+    string identifier = getVariableValue(name);
+    assert(identifier[0] == '_');
+    map<std::string, vector<string> *>::iterator iter;
+    iter = arrayTable.find(identifier);
+    if (iter != arrayTable.end()) {
+        return iter->second;
+    }
+    log("use of undefined array: ", name);
+    return nullptr;
 }

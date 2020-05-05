@@ -24,6 +24,8 @@ private:
     Parser parser;
     std::map<std::string, Parser::ASTNode*> functionTable;
     std::vector<std::map<std::string, Variable>*> variableTable;
+    std::map<std::string, std::vector<std::string>*> arrayTable;
+    std::vector<string>* getArray(const std::string& name);
     int scopeLevel;
     void enterScope();
     void exitScope();
@@ -51,6 +53,8 @@ private:
     string visitFunctionDeclareNode(Parser::ASTNode *node);
     string visitFunctionCallNode(Parser::ASTNode *node);
     string visitReturnNode(Parser::ASTNode *node);
+    string visitArrayDeclareNode(Parser::ASTNode *node);
+    string visitArrayAccessNode(Parser::ASTNode *node);
 };
 
 

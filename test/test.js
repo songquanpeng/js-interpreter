@@ -1,3 +1,3 @@
-output("Please input something: ");
-let i = input();
-output("Your input is: " + i);
+let a = [1, 2, 3];
+let b = a[2];
+a[2] = 4;
