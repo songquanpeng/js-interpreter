@@ -169,11 +169,12 @@ Parser::ASTNode *Parser::parseParameterList() {
     Lexer::Token token = getToken();
     while (token.type == Lexer::ID) {
         node->token = token;
-        node->next = new ASTNode;
-        node = node->next;
+        node->type = ARGUMENT_NODE;
         token = getToken();
         if (token.value == ",") {
             token = getToken();
+            node->next = new ASTNode;
+            node = node->next;
             continue;
         } else {
             assert(token.value == ")");

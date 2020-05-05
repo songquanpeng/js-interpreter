@@ -9,10 +9,10 @@ Javascript interpreter written in C++.
 - [x] Debug mode.
 - [x] Support if statement.
 - [x] Support while loop statement.
-- [ ] Support for loop statement.
+- [x] Support for loop statement.
 - [ ] Support continue & break;
-- [ ] Support function definition.
-- [ ] Support function call.
+- [x] Support function definition.
+- [x] Support function call.
 - [ ] Support class.
 - [ ] Support multi-level scope.
 - [ ] Implement necessary built-in functions.

@@ -29,7 +29,8 @@ public:
         BOOL_NODE,
         WHILE_NODE,
         FOR_NODE,
-        NEGATIVE_NODE
+        NEGATIVE_NODE,
+        ARGUMENT_NODE
     };
     class ASTNode {
     public:
@@ -39,7 +40,7 @@ public:
         NodeType type;
         ASTNode() {
             type = NONE;
-            child[0] = child[1] = child[2] = nullptr;
+            child[0] = child[1] = child[2] = child[3] = nullptr;
             next = nullptr;
         }
     };

@@ -22,7 +22,10 @@ public:
 private:
     Parser parser;
     std::map<std::string, Variable> variableTable;
+    std::map<std::string, Parser::ASTNode*> functionTable;
+    bool declareVariable(const std::string& name, const Variable& variable);
     string getVariableValue(const std::string& name);
+    Parser::ASTNode* getFunction(const std::string& name);
     Parser::ASTNode *root;
     bool debug = false;
     static void error(const std::string& message, const std::string& extra="");
@@ -38,6 +41,9 @@ private:
     string visitBinaryOperatorNode(Parser::ASTNode *node);
     string visitWhileNode(Parser::ASTNode *node);
     string visitForNode(Parser::ASTNode *node);
+    string visitFunctionDeclareNode(Parser::ASTNode *node);
+    string visitFunctionCallNode(Parser::ASTNode *node);
+    string visitReturnNode(Parser::ASTNode *node);
 };
 
 

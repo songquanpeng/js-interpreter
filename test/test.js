@@ -1,6 +1,11 @@
-let count = 0;
-for (let i = 0; i < 20; i = i + 1) {
-    if((i == 5) || (i == 10)) {
-        count = count + 1;
-    }
+function add(a, b) {
+    let temp = a + b;
+    return temp;
 }
+
+function minus(m, n) {
+    return m - n;
+}
+
+let c = add(1, 2);
+let d = minus(c, 7);

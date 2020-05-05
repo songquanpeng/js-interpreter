@@ -81,6 +81,16 @@ void Interpreter::setDebugMode(bool enable) {
     parser.setDebugMode(enable);
 }
 
+bool Interpreter::declareVariable(const std::string& name, const Variable& variable) {
+    map<string, Variable>::iterator iter;
+    iter = variableTable.find(name);
+    if (iter != variableTable.end()) {
+        log("define a variable multiple times: ", name);
+    }
+    variableTable.insert({name, variable});
+    return true;
+}
+
 string Interpreter::getVariableValue(const string &name) {
     map<string, Interpreter::Variable>::iterator iter;
     iter = variableTable.find(name);
@@ -90,6 +100,17 @@ string Interpreter::getVariableValue(const string &name) {
         log("use undefined variable: ", name);
         return "";
     }
+}
+
+Parser::ASTNode *Interpreter::getFunction(const std::string &name) {
+    map<string, Parser::ASTNode*>::iterator iter;
+    iter = functionTable.find(name);
+    if (iter != functionTable.end()) {
+        return iter->second;
+    } else {
+        log("use undefined function: ", name);
+    }
+    return nullptr;
 }
 
 string Interpreter::visitNode(Parser::ASTNode *node) {
@@ -110,9 +131,8 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
         case Parser::CHAR_NODE:
         case Parser::BOOL_NODE:
             return node->token.value;
-        case Parser::VAR_NODE: {
+        case Parser::VAR_NODE:
             return getVariableValue(node->token.value);
-        }
         case Parser::BINARY_OPERATOR_NODE:
             return visitBinaryOperatorNode(node);
         case Parser::NONE:
@@ -125,6 +145,12 @@ string Interpreter::visitNode(Parser::ASTNode *node) {
             return visitWhileNode(node);
         case Parser::FOR_NODE:
             return visitForNode(node);
+        case Parser::FUNCTION_DECLARE_NODE:
+            return visitFunctionDeclareNode(node);
+        case Parser::FUNCTION_CALL_NODE:
+            return visitFunctionCallNode(node);
+        case Parser::RETURN_NODE:
+            return visitReturnNode(node);
         default:
             error("unexpected node type: ", to_string(node->type));
             return "";
@@ -137,7 +163,7 @@ string Interpreter::visitDeclareNode(Parser::ASTNode *node) {
     Variable var;
     var.type = node->token.type;
     var.value = visitNode(node->child[0]);
-    variableTable.insert({varName, var});
+    declareVariable(varName, var);
     visitNode(node->next);
     return var.value;
 }
@@ -178,16 +204,17 @@ string Interpreter::visitNegativeNode(Parser::ASTNode *node) {
 
 string Interpreter::visitIfNode(Parser::ASTNode *node) {
     assert(node->type == Parser::IF_NODE);
+    string result;
     string condition = visitNode(node->child[0]);
     if (condition != "0" && condition != "false" && !condition.empty()) {
-        return visitNode(node->child[1]);
+        result =  visitNode(node->child[1]);
     } else {
         if (node->child[2] != nullptr) {
-            return visitNode(node->child[2]);
-        } else {
-            return "";
+            result =  visitNode(node->child[2]);
         }
     }
+    visitNode(node->next);
+    return result;
 }
 
 string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
@@ -244,6 +271,7 @@ string Interpreter::visitWhileNode(Parser::ASTNode *node) {
         visitNode(node->child[1]);
         condition = visitNode(node->child[0]);
     }
+    visitNode(node->next);
     return "";
 }
 
@@ -256,6 +284,44 @@ string Interpreter::visitForNode(Parser::ASTNode *node) {
         visitNode(node->child[2]); // Update
         condition = visitNode(node->child[1]); // Check condition
     }
+    visitNode(node->next);
     return "";
 }
 
+string Interpreter::visitFunctionDeclareNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::FUNCTION_DECLARE_NODE);
+    string name = node->token.value;
+    map<string, Parser::ASTNode*>::iterator iter;
+    iter = functionTable.find(name);
+    if (iter == functionTable.end()) {
+        functionTable.insert({name, node});
+    } else {
+        log("define a function multiple times: ", name);
+    }
+    visitNode(node->next);
+    return "";
+}
+
+string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
+    // First we should initialize the parameters with arguments.
+    Parser::ASTNode* functionNode = getFunction(node->token.value);
+    Parser::ASTNode* argumentNode = functionNode->child[0];
+    Parser::ASTNode* parameterNode = node->child[0];
+    while (argumentNode != nullptr && parameterNode != nullptr) {
+        Variable var;
+        var.type = argumentNode->token.type;
+        var.value = visitNode(parameterNode);
+        declareVariable(argumentNode->token.value, var);
+        argumentNode = argumentNode->next;
+        parameterNode = parameterNode->next;
+    }
+    // The we execute this function's AST tree.
+    string result = visitNode(functionNode->child[1]);
+    visitNode(node->next);
+    return result;
+}
+
+string Interpreter::visitReturnNode(Parser::ASTNode *node) {
+    assert(node->type == Parser::RETURN_NODE);
+    return visitNode(node->child[0]);
+}
