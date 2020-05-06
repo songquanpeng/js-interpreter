@@ -396,18 +396,26 @@ string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
         output(outputValue);
     } else {
         // First we should initialize the parameters with arguments.
+        // Notice there are something special if the arguments are array, we should do
+        // an extra job: copy the array.
         Parser::ASTNode *functionNode = getFunction(functionName);
         Parser::ASTNode *argumentNode = functionNode->child[0];
         while (argumentNode != nullptr && parameterNode != nullptr) {
             Variable var;
             var.type = argumentNode->token.type;
             var.value = visitNode(parameterNode);
+            if (var.value.rfind("__array_", 0) == 0) {
+                // This is an array.
+                var.value = copyArray(var.value);
+            }
             declareVariable(argumentNode->token.value, var);
             argumentNode = argumentNode->next;
             parameterNode = parameterNode->next;
         }
         // The we execute this function's body.
-        result = visitNode(functionNode->child[1]);
+        visitNode(functionNode->child[1]);
+        result = returnValue;
+        returnValue = "notice this return value has been used, check your code";
     }
     exitScope();
     visitNode(node->next);
@@ -416,12 +424,13 @@ string Interpreter::visitFunctionCallNode(Parser::ASTNode *node) {
 
 string Interpreter::visitReturnNode(Parser::ASTNode *node) {
     assert(node->type == Parser::RETURN_NODE);
-    return visitNode(node->child[0]);
+    returnValue = visitNode(node->child[0]);
+    return returnValue;
 }
 
 string Interpreter::visitArrayDeclareNode(Parser::ASTNode *node) {
     assert(node->type == Parser::ARRAY_DECLARE_NODE);
-    string identifier("__array_" + to_string(time(nullptr)));
+    string identifier("__array_" + to_string(arrayTable.size()));
     auto *store = new vector<string>;
     auto *current = node->child[0];
     while (current != nullptr) {
@@ -430,6 +439,15 @@ string Interpreter::visitArrayDeclareNode(Parser::ASTNode *node) {
     }
     arrayTable.insert({identifier, store});
     return identifier;
+}
+
+
+string Interpreter::copyArray(const std::string &identifier) {
+    auto *origin = getArray(identifier, true);
+    auto *copy = new vector<string>(*origin);
+    string newIdentifier("__array_" + to_string(arrayTable.size()));
+    arrayTable.insert({newIdentifier, copy});
+    return newIdentifier;
 }
 
 string Interpreter::visitArrayAccessNode(Parser::ASTNode *node) {
@@ -446,8 +464,8 @@ string Interpreter::visitArrayAccessNode(Parser::ASTNode *node) {
     return (*v)[i];
 }
 
-std::vector<string> *Interpreter::getArray(const std::string &name) {
-    string identifier = getVariableValue(name);
+std::vector<string> *Interpreter::getArray(const std::string &name, bool isIdentifier) {
+    string identifier = isIdentifier ? name : getVariableValue(name);
     assert(identifier[0] == '_');
     map<std::string, vector<string> *>::iterator iter;
     iter = arrayTable.find(identifier);
@@ -457,3 +475,5 @@ std::vector<string> *Interpreter::getArray(const std::string &name) {
     log("use of undefined array: ", name);
     return nullptr;
 }
+
+

@@ -25,7 +25,9 @@ private:
     std::map<std::string, Parser::ASTNode*> functionTable;
     std::vector<std::map<std::string, Variable>*> variableTable;
     std::map<std::string, std::vector<std::string>*> arrayTable;
-    std::vector<string>* getArray(const std::string& name);
+    std::vector<string>* getArray(const std::string& name, bool isIdentifier=false);
+    string copyArray(const std::string& identifier);
+    std::string returnValue;
     int scopeLevel;
     void enterScope();
     void exitScope();

@@ -474,9 +474,13 @@ Parser::ASTNode *Parser::parseFunction() {
     node->token = token;
     token = getToken();
     assert(token.value == "(");
-    node->child[0] = parseParameterList();
     token = getToken();
-    assert(token.value == ")");
+    if(token.value != ")") {
+        restoreToken();
+        node->child[0] = parseParameterList();
+        token = getToken();
+        assert(token.value == ")");
+    }
     token = getToken();
     assert(token.value == "{");
     node->child[1] = parseStatementList();

@@ -1,5 +1,6 @@
 ## Description
-Javascript interpreter written in C++.
+1. A simple Javascript interpreter written in C++.
+2. And this is a toy project for beginners in compiler design & implementation.
 
 ## TODO List
 - [x] Support variable declare statement.
@@ -27,8 +28,8 @@ Javascript interpreter written in C++.
     - [ ] ++
     - [ ] --
 - [x] Support array.
-- [ ] Support return array.
 - [x] Make the `;` optional.
+- [ ] Refactor the lexer.
 
 ## Context Free Grammar
 

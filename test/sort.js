@@ -19,9 +19,10 @@ function selectionSort(arr, length) {
             arr[minIndex] = temp;
         }
     }
-    printArray(arr, len);
+    return arr;
 }
 
 let arr = [2, 5, 17, 7, 19, 90, -9, 11, 1, 0, 10, -6];
 let len = 12;
-selectionSort(arr, len);
+let res = selectionSort(arr, len);
+printArray(res, len);
