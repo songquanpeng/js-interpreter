@@ -115,7 +115,7 @@ Parser::ASTNode *Parser::parseStatement() {
         node = parseFunction();
     } else if (token.type == Lexer::ID) {
         token = getToken();
-        if (token.value == "=") {
+        if (token.value == "=" || token.value == "[") {
             restoreToken();
             restoreToken();
             node = parseAssignStatement();
@@ -156,6 +156,10 @@ Parser::ASTNode *Parser::parseDeclareStatement() {
     auto *node = new ASTNode;
     node->type = VAR_DECLARE_NODE;
     Lexer::Token token = getToken();
+    if(token.value == ";") {
+        node->type = NONE;
+        return node;
+    }
     assert(token.value == "var" || token.value == "let" || token.value == "const");
     token = getToken();
     assert(token.type == Lexer::ID);
@@ -197,6 +201,12 @@ Parser::ASTNode *Parser::parseAssignStatement() {
     assert(token.type == Lexer::ID);
     node->token = token;
     token = getToken();
+    if(token.value == "[") {
+        node->child[1] = parseExpression();
+        token = getToken();
+        assert(token.value == "]");
+        token = getToken();
+    }
     assert(token.value == "=");
     node->child[0] = parseExpression();
     token = getToken();

@@ -170,7 +170,7 @@ string Interpreter::input() {
 }
 
 void Interpreter::output(const string &value) {
-    cout << value << endl;
+    cout << value << " ";
 }
 
 string Interpreter::visitNode(Parser::ASTNode *node) {
@@ -234,11 +234,25 @@ string Interpreter::visitDeclareNode(Parser::ASTNode *node) {
 
 string Interpreter::visitAssignNode(Parser::ASTNode *node) {
     assert(node->type == Parser::VAR_ASSIGN_NODE);
+    int index = -1;
+    if (node->child[1] != nullptr) {
+        string temp = visitNode(node->child[1]);
+        try {
+            index = stoi(temp);
+        } catch (std::invalid_argument &e) {
+            index = 0;
+        }
+    }
     string varName = node->token.value;
     Variable var;
     var.type = node->token.type;
     var.value = visitNode(node->child[0]);
-    setVariableValue(varName, var);
+    if (index == -1) {
+        setVariableValue(varName, var);
+    } else { // This variable is an array.
+        vector<string> *v = getArray(varName);
+        (*v)[index] = var.value;
+    }
     visitNode(node->next);
     return var.value;
 }
@@ -329,8 +343,10 @@ string Interpreter::visitWhileNode(Parser::ASTNode *node) {
     assert(node->type == Parser::WHILE_NODE);
     string condition = visitNode(node->child[0]);
     while (condition != "0" && condition != "false" && !condition.empty()) {
+        enterScope();
         visitNode(node->child[1]);
         condition = visitNode(node->child[0]);
+        exitScope();
     }
     exitScope();
     visitNode(node->next);
@@ -343,8 +359,10 @@ string Interpreter::visitForNode(Parser::ASTNode *node) {
     visitNode(node->child[0]); // Initialization
     string condition = visitNode(node->child[1]); // Condition
     while (condition != "0" && condition != "false" && !condition.empty()) {
+        enterScope();
         visitNode(node->child[3]); // Body
         visitNode(node->child[2]); // Update
+        exitScope();
         condition = visitNode(node->child[1]); // Check condition
     }
     exitScope();

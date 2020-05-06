@@ -34,3 +34,8 @@ let h = 10;
 while (h > 0) {
     h = h - 1.5;
 }
+
+let i = [1, 2, 3];
+let j = i[2];
+i[2] = 4;
+let k = i[2];

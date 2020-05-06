@@ -24,7 +24,10 @@ Javascript interpreter written in C++.
     - [ ] %
     - [ ] ===
     - [ ] !==
-- [ ] Support array.
+    - [ ] ++
+    - [ ] --
+- [x] Support array.
+- [ ] Support return array.
 - [x] Make the `;` optional.
 
 ## Context Free Grammar
