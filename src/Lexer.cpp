@@ -63,6 +63,7 @@ void Lexer::initKeywordsAndSymbols() {
     symbols.insert("-");
     symbols.insert("*");
     symbols.insert("/");
+    symbols.insert("%");
     symbols.insert("&");
     symbols.insert("|");
     symbols.insert("!");

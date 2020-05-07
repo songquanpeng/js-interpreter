@@ -292,50 +292,55 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
     string opt = node->token.value;
     string left = visitNode(node->child[0]);
     string right = visitNode(node->child[1]);
+    string result;
     double lv, rv;
     try {
-        lv = stof(left);
+        lv = stod(left);
     } catch (std::invalid_argument &e) {
         if (left == "false") lv = 0;
         else lv = 1;
     }
     try {
-        rv = stof(right);
+        rv = stod(right);
     } catch (std::invalid_argument &e) {
         if (right == "false") rv = 0;
         else rv = 1;
     }
     if (opt == "+") {
         if (node->child[0]->type == Parser::STRING_NODE) {
-            return left + right;
+            result = left + right;
         }
-        return to_string(lv + rv);
+        result = to_string(lv + rv);
     } else if (opt == "-") {
-        return to_string(lv - rv);
+        result = to_string(lv - rv);
     } else if (opt == "*") {
-        return to_string(lv * rv);
+        result = to_string(lv * rv);
     } else if (opt == "/") {
-        return to_string(lv / rv);
+        result = to_string(lv / rv);
+    } else if (opt == "%") {
+        int li = (int) lv;
+        int ri = (int) rv;
+        result = to_string(li % ri);
     } else if (opt == "<=") {
-        return lv <= rv ? "true" : "false";
+        result = lv <= rv ? "true" : "false";
     } else if (opt == ">=") {
-        return lv >= rv ? "true" : "false";
+        result = lv >= rv ? "true" : "false";
     } else if (opt == "==") {
-        return lv == rv ? "true" : "false";
+        result = lv == rv ? "true" : "false";
     } else if (opt == "<") {
-        return lv < rv ? "true" : "false";
+        result = lv < rv ? "true" : "false";
     } else if (opt == ">") {
-        return lv > rv ? "true" : "false";
+        result = lv > rv ? "true" : "false";
     } else if (opt == "!=") {
-        return lv != rv ? "true" : "false";
+        result = lv != rv ? "true" : "false";
     } else if (opt == "&&") {
-        return (lv == 0 || rv == 0) ? "false" : "true";
+        result = (lv == 0 || rv == 0) ? "false" : "true";
     } else if (opt == "||") {
-        return (lv != 0 || rv != 0) ? "true" : "false";
+        result = (lv != 0 || rv != 0) ? "true" : "false";
     } else {
         error("unexpected operator: ", opt);
-        return "";
     }
+    return result;
 }
 
 string Interpreter::visitWhileNode(Parser::ASTNode *node) {

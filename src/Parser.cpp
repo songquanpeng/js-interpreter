@@ -384,7 +384,7 @@ Parser::ASTNode *Parser::parseAdditiveExpression() {
 Parser::ASTNode *Parser::parseTerm() {
     ASTNode *node = parseFactor();
     Lexer::Token token = getToken();
-    while (token.value == "*" || token.value == "/") {
+    while (token.value == "*" || token.value == "/" || token.value == "%") {
         auto *parentNode = new ASTNode;
         parentNode->type = BINARY_OPERATOR_NODE;
         parentNode->token = token;
