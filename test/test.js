@@ -1,2 +1,4 @@
-let a = 44 % 3;
-let b = a * a - a + 5;
+let a = "abc" + "efg";
+let b = a + "hij";
+let c = 1 + 2 * 3 - 4 % 5;
+let d = b + c;

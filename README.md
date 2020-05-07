@@ -32,6 +32,7 @@
 - [x] Support array.
 - [x] Make the `;` optional.
 - [ ] Refactor the lexer.
+- [ ] Show the array's content's instead of `__array_n`.
 
 ## Context Free Grammar
 

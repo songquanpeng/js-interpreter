@@ -293,12 +293,14 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
     string left = visitNode(node->child[0]);
     string right = visitNode(node->child[1]);
     string result;
+    bool leftIsString = node->child[0]->type == Parser::STRING_NODE;
     double lv, rv;
     try {
         lv = stod(left);
     } catch (std::invalid_argument &e) {
         if (left == "false") lv = 0;
         else lv = 1;
+        leftIsString = true;
     }
     try {
         rv = stod(right);
@@ -307,10 +309,11 @@ string Interpreter::visitBinaryOperatorNode(Parser::ASTNode *node) {
         else rv = 1;
     }
     if (opt == "+") {
-        if (node->child[0]->type == Parser::STRING_NODE) {
+        if (leftIsString) {
             result = left + right;
+        } else {
+            result = to_string(lv + rv);
         }
-        result = to_string(lv + rv);
     } else if (opt == "-") {
         result = to_string(lv - rv);
     } else if (opt == "*") {
