@@ -45,7 +45,7 @@ void Parser::restoreToken() {
 
 void Parser::error(const string &message, const Lexer::Token &token) {
     cerr << "[Parser] [Error]: " << message << " | [Token]: " << lexer.tokenToString(token) << endl;
-    exit(-1);
+    if (debug) exit(-1);
 }
 
 void Parser::log(const string &message, const Lexer::Token &token) {
@@ -156,7 +156,7 @@ Parser::ASTNode *Parser::parseDeclareStatement() {
     auto *node = new ASTNode;
     node->type = VAR_DECLARE_NODE;
     Lexer::Token token = getToken();
-    if(token.value == ";") {
+    if (token.value == ";") {
         node->type = NONE;
         return node;
     }
@@ -201,7 +201,7 @@ Parser::ASTNode *Parser::parseAssignStatement() {
     assert(token.type == Lexer::ID);
     node->token = token;
     token = getToken();
-    if(token.value == "[") {
+    if (token.value == "[") {
         node->child[1] = parseExpression();
         token = getToken();
         assert(token.value == "]");
@@ -475,7 +475,7 @@ Parser::ASTNode *Parser::parseFunction() {
     token = getToken();
     assert(token.value == "(");
     token = getToken();
-    if(token.value != ")") {
+    if (token.value != ")") {
         restoreToken();
         node->child[0] = parseParameterList();
         token = getToken();

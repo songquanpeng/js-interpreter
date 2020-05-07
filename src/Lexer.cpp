@@ -300,7 +300,7 @@ void Lexer::error(const std::string &message, char currentChar) {
     } else {
         cerr << "[Lexer] [Error]: " << message << "." << endl;
     }
-    exit(-1);
+    if (debug) exit(-1);
 }
 
 void Lexer::setDebugMode(bool enable) {

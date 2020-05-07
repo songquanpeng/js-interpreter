@@ -77,22 +77,20 @@ void Interpreter::log(const string &message, const std::string &extra) {
 
 void Interpreter::printVariableTable() {
     cout << "Variable Table" << endl;
-    cout << "+----+---+---------------------+" << endl;
+    cout << "+----+---------------------+" << endl;
     cout << "| " << std::left << setw(3) << "ID"
-         << "| " << std::left << setw(2) << "T"
          << "| " << std::left << setw(20) << "Value"
          << "| " << endl;
-    cout << "+----+---+---------------------+" << endl;
+    cout << "+----+---------------------+" << endl;
     for (int i = scopeLevel; i >= 0; --i) {
         map<string, Variable> *scope = variableTable[i];
         map<string, Interpreter::Variable>::iterator iter;
         for (const auto &e : *scope) {
             cout << "| " << std::left << setw(3) << e.first
-                 << "| " << std::left << setw(2) << e.second.type
                  << "| " << std::left << setw(20) << e.second.value
                  << "| " << endl;
         }
-        cout << "+----+---+---------------------+" << endl;
+        cout << "+----+---------------------+" << endl;
     }
 }
 
